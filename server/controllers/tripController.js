@@ -1,5 +1,33 @@
 const Trip = require('../models/Trip');
 const User = require('../models/User');
+const cloudinary = require('../config/cloudinary');
+
+// Helper to extract public ID from URL
+const extractPublicId = (url) => {
+    try {
+        if (!url || !url.includes('cloudinary')) return null;
+        // Example: https://res.cloudinary.com/.../upload/v12345/folder/filename.jpg
+        // We need 'folder/filename' (without extension)
+        const parts = url.split('/upload/');
+        if (parts.length < 2) return null;
+
+        const pathWithVersion = parts[1]; // v12345/folder/filename.jpg
+        const pathParts = pathWithVersion.split('/');
+
+        // Remove version if present (starts with v)
+        if (pathParts[0].startsWith('v') && !isNaN(parseInt(pathParts[0].substring(1)))) {
+            pathParts.shift();
+        }
+
+        const publicIdWithExt = pathParts.join('/');
+        const publicId = publicIdWithExt.split('.')[0];
+
+        return publicId;
+    } catch (err) {
+        console.error("Error extraction public ID:", err);
+        return null;
+    }
+};
 
 // Get all trips for user
 exports.getTrips = async (req, res) => {
@@ -195,6 +223,34 @@ exports.deleteTrip = async (req, res) => {
         // Make sure user owns trip
         if (trip.user.toString() !== req.user.id) {
             return res.status(401).json({ msg: 'Not authorized' });
+        }
+
+        // 1. Collect all image URLs
+        const imageUrls = [];
+        if (trip.cover) imageUrls.push(trip.cover);
+
+        if (trip.days && trip.days.length > 0) {
+            trip.days.forEach(day => {
+                if (day.stops && day.stops.length > 0) {
+                    day.stops.forEach(stop => {
+                        if (stop.photos && stop.photos.length > 0) {
+                            imageUrls.push(...stop.photos);
+                        }
+                    });
+                }
+            });
+        }
+
+        // 2. Delete images from Cloudinary
+        if (imageUrls.length > 0) {
+            const deletePromises = imageUrls.map(url => {
+                const publicId = extractPublicId(url);
+                if (publicId) {
+                    return cloudinary.uploader.destroy(publicId);
+                }
+                return Promise.resolve();
+            });
+            await Promise.all(deletePromises);
         }
 
         await Trip.findByIdAndRemove(req.params.id);
