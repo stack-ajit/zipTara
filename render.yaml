@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: travel-trails-api
+    name: ziptara-api
     env: node
     plan: free
     rootDir: server
