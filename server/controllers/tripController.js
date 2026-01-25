@@ -4,7 +4,9 @@ const User = require('../models/User');
 // Get all trips for user
 exports.getTrips = async (req, res) => {
     try {
-        const trips = await Trip.find({ user: req.user.id }).sort({ date: -1 });
+        const trips = await Trip.find({ user: req.user.id })
+            .select('-days') // Exclude days/stops/photos for list view
+            .sort({ date: -1 });
         res.json(trips);
     } catch (err) {
         console.error(err.message);
@@ -16,6 +18,7 @@ exports.getTrips = async (req, res) => {
 exports.getPublicTrips = async (req, res) => {
     try {
         const trips = await Trip.find({ isPublic: true })
+            .select('-days') // Exclude heavy data
             .sort({ createdAt: -1 })
             .populate('user', 'username fullName');
 
