@@ -12,7 +12,7 @@ const PORT = process.env.PORT || 5000;
 app.use(cors({
     origin: process.env.CLIENT_URL || '*', // Allow Vercel app
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    allowedHeaders: ['Content-Type', 'Authorization']
+    allowedHeaders: ['Content-Type', 'Authorization', 'x-auth-token']
 }));
 app.use(express.json({ limit: '50mb' })); // Increased limit for base64 images (temporary)
 
