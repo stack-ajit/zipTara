@@ -3,7 +3,6 @@ services:
     name: travel-trails-api
     env: node
     plan: free
-    repo: https://github.com/your-username/your-repo-name # Optional, Render detects it
     rootDir: server
     buildCommand: npm install
     startCommand: npm start
