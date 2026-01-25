@@ -184,6 +184,19 @@ exports.updateTrip = async (req, res) => {
             return res.status(401).json({ msg: 'Not authorized' });
         }
 
+        // 1. Capture OLD images
+        const oldImages = new Set();
+        if (trip.cover) oldImages.add(trip.cover);
+        if (trip.days && trip.days.length > 0) {
+            trip.days.forEach(d => {
+                if (d.stops) {
+                    d.stops.forEach(s => {
+                        if (s.photos) s.photos.forEach(p => oldImages.add(p));
+                    });
+                }
+            });
+        }
+
         const tripData = { ...req.body };
 
         // Parse JSON strings if coming from FormData
@@ -199,9 +212,38 @@ exports.updateTrip = async (req, res) => {
 
         tripData.tags = generateAutoTags(tripData);
 
-        // Handle image upload
+        // Handle image upload (New Cover)
         if (req.file) {
             tripData.cover = req.file.path;
+        }
+
+        // 2. Capture NEW images
+        const newImages = new Set();
+        if (tripData.cover) newImages.add(tripData.cover);
+        if (tripData.days && tripData.days.length > 0) {
+            tripData.days.forEach(d => {
+                if (d.stops) {
+                    d.stops.forEach(s => {
+                        if (s.photos) s.photos.forEach(p => newImages.add(p));
+                    });
+                }
+            });
+        }
+
+        // 3. Find deleted images (Present in OLD but not in NEW)
+        const imagesToDelete = [...oldImages].filter(url => !newImages.has(url));
+
+        // 4. Delete from Cloudinary
+        if (imagesToDelete.length > 0) {
+            const deletePromises = imagesToDelete.map(url => {
+                const publicId = extractPublicId(url);
+                if (publicId) {
+                    return cloudinary.uploader.destroy(publicId);
+                }
+                return Promise.resolve();
+            });
+            // We don't await this strictly to block the response, but it's safer to await
+            await Promise.all(deletePromises);
         }
 
         // console.log("Update Trip Body:", JSON.stringify(req.body, null, 2)); // DEBUG
