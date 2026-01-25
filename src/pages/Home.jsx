@@ -1,0 +1,160 @@
+import { Search, MapPin } from 'lucide-react';
+import { useState, useMemo, useEffect } from 'react';
+import Layout from '../components/Layout';
+import { useTrips } from '../store/useStore';
+import TripCard from '../components/TripCard';
+import { Link } from 'react-router-dom';
+
+const Home = () => {
+    const { trips, publicTrips, user, loading: tripsLoading } = useTrips();
+    const [searchTerm, setSearchTerm] = useState('');
+    const [greeting, setGreeting] = useState('');
+
+    useEffect(() => {
+        const hour = new Date().getHours();
+        if (hour < 12) setGreeting('Good morning');
+        else if (hour < 18) setGreeting('Good afternoon');
+        else setGreeting('Good evening');
+    }, []);
+
+    // Helper to get stats
+    const stats = {
+        totalTrips: trips.length,
+        countriesVisited: new Set(trips.map(t => t.location)).size, // Mock calculation
+        photosCount: trips.reduce((acc, t) => acc + (t.days?.reduce((dAcc, d) => dAcc + (d.stops?.reduce((sAcc, s) => sAcc + (s.photos?.length || 0), 0) || 0), 0) || 0), 0)
+    };
+
+    // Logic for "Get Inspired" - Now uses real public trips from other users
+    const displayPublicTrips = publicTrips.filter(t =>
+    (t.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        t.location?.toLowerCase().includes(searchTerm.toLowerCase()))
+    );
+
+    const tags = ["#Beach", "#Mountain", "#Europe", "#Asia", "Photography"];
+
+    return (
+        <Layout>
+            <div className="space-y-8 pb-20">
+                {/* Hero / Welcome Section */}
+                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-3xl p-8 sm:p-12 relative overflow-hidden">
+                    {/* Abstract Background Decoration */}
+                    <div className="absolute top-0 right-0 -mr-20 -mt-20 w-96 h-96 bg-blue-100 rounded-full blur-3xl opacity-50"></div>
+                    <div className="absolute bottom-0 left-0 -ml-20 -mb-20 w-80 h-80 bg-purple-100 rounded-full blur-3xl opacity-50"></div>
+
+                    <div className="relative z-10 flex flex-col md:flex-row md:items-start justify-between gap-8">
+                        <div className="max-w-2xl w-full">
+                            <h1 className="text-4xl font-extrabold text-slate-900 leading-tight mb-4">
+                                Good morning, {user?.name || 'Isabella'}.<br />
+                                Ready for an adventure?
+                            </h1>
+
+                            {/* Search Bar & Toggle Row */}
+                            <div className="mt-8 flex items-center gap-4">
+                                <div className="relative flex-grow max-w-lg">
+                                    <input
+                                        type="text"
+                                        placeholder="Search destinations, trails, or tags..."
+                                        className="w-full pl-6 pr-4 py-4 rounded-2xl border-0 shadow-lg text-gray-700 bg-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all"
+                                        value={searchTerm}
+                                        onChange={(e) => setSearchTerm(e.target.value)}
+                                    />
+                                    <div className="absolute right-2 top-2 bottom-2 bg-transparent text-gray-400 w-12 flex items-center justify-center">
+                                        <Search className="w-5 h-5" />
+                                    </div>
+                                </div>
+
+                            </div>
+
+                            {/* Tags */}
+                            <div className="flex flex-wrap gap-3 mt-6">
+                                {tags.map(tag => (
+                                    <button key={tag} className="px-4 py-2 bg-white/60 backdrop-blur-sm border border-white/50 rounded-full text-sm font-medium text-slate-600 hover:bg-white hover:text-blue-600 transition-all shadow-sm">
+                                        {tag}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Weather/Stats Widget */}
+                        <div className="hidden lg:block bg-white/80 backdrop-blur-md p-4 rounded-2xl shadow-sm border border-white/50 min-w-[200px]">
+                            <div className="flex items-center space-x-3">
+                                <div className="bg-orange-100 p-2 rounded-full text-orange-500">
+                                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                                </div>
+                                <div>
+                                    <p className="font-bold text-slate-800">24°C, Paris, France</p>
+                                    <p className="text-xs text-gray-500 font-medium">0 Trips Created</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Main Grid Content */}
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+
+                    {/* Left Column: My Trips / Create Trip CTA */}
+                    <div className="lg:col-span-5 xl:col-span-4">
+                        {/* Card with topographic pattern */}
+                        <div className="bg-white rounded-3xl p-8 shadow-sm border border-gray-100 relative overflow-hidden min-h-[400px] flex flex-col items-center justify-center text-center">
+                            {/* Topographic pattern simulation via SVG or gradient/image if available, else simple dashed border */}
+                            <div className="absolute inset-0 opacity-5 pointer-events-none" style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%239C92AC' fill-opacity='0.2' fill-rule='evenodd'/%3E%3C/svg%3E")` }}></div>
+                            <div className="absolute inset-0 opacity-10 pointer-events-none flex items-center justify-center">
+                                {/* SVG Pattern simulating topo lines */}
+                                <svg width="100%" height="100%" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M0 200 Q 150 100 300 200 T 600 200" stroke="black" strokeWidth="0.5" />
+                                    <path d="M0 250 Q 150 150 300 250 T 600 250" stroke="black" strokeWidth="0.5" />
+                                    <path d="M0 150 Q 150 50 300 150 T 600 150" stroke="black" strokeWidth="0.5" />
+                                </svg>
+                            </div>
+
+                            <div className="relative z-10 w-full flex flex-col items-center">
+                                <div className="w-16 h-16 bg-gray-50 rounded-2xl flex items-center justify-center mb-6">
+                                    <MapPin className="text-gray-400 w-8 h-8" />
+                                </div>
+                                <h3 className="text-xl font-bold text-gray-900 mb-2">
+                                    {trips.length === 0 ? 'No trips yet' : 'Plan your next trip'}
+                                </h3>
+                                <p className="text-gray-500 max-w-[200px] mb-8 text-sm">
+                                    {trips.length === 0 ? 'Create your first trip to start your travel journal.' : 'Ready for a new adventure? Start planning now.'}
+                                </p>
+                                <Link
+                                    to="/trip/new"
+                                    className="bg-slate-900 text-white px-6 py-3 rounded-xl font-medium shadow-xl hover:bg-black transition-all flex items-center gap-2"
+                                >
+                                    <span className="text-lg pb-1">+</span>
+                                    <span>Create your first trip</span>
+                                </Link>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Right Column: Get Inspired */}
+                    <div className="lg:col-span-7 xl:col-span-8">
+                        <div className="bg-white rounded-3xl p-8 shadow-sm border border-gray-100 h-full">
+                            <div className="flex items-center justify-between mb-6">
+                                <h2 className="text-2xl font-bold text-slate-900">Get Inspired</h2>
+                            </div>
+
+                            {displayPublicTrips.length === 0 ? (
+                                <div className="text-center py-12">
+                                    <p className="text-gray-500">No public trips found for inspiration yet.</p>
+                                </div>
+                            ) : (
+                                <div className="flex space-x-6 overflow-x-auto pb-6 snap-x no-scrollbar">
+                                    {displayPublicTrips.map((trip) => (
+                                        <div key={trip.id} className="min-w-[280px] snap-center">
+                                            <TripCard trip={trip} />
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </Layout>
+    );
+};
+
+export default Home;
