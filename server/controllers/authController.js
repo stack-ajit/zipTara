@@ -4,14 +4,14 @@ const jwt = require('jsonwebtoken');
 
 // Register User
 exports.register = async (req, res) => {
-    const { username, email, password } = req.body;
+    const { username, email, password, fullName, dob } = req.body;
     try {
         let user = await User.findOne({ $or: [{ email }, { username }] });
         if (user) {
             return res.status(400).json({ msg: 'User already exists' });
         }
 
-        user = new User({ username, email, password });
+        user = new User({ username, email, password, fullName, dob });
 
         const salt = await bcrypt.genSalt(10);
         user.password = await bcrypt.hash(password, salt);
@@ -22,7 +22,7 @@ exports.register = async (req, res) => {
 
         jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '7d' }, (err, token) => {
             if (err) throw err;
-            res.json({ token, user: { id: user.id, username: user.username, email: user.email } });
+            res.json({ token, user: { id: user.id, username: user.username, email: user.email, fullName: user.fullName, dob: user.dob } });
         });
     } catch (err) {
         console.error(err.message);

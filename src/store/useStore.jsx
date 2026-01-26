@@ -66,9 +66,9 @@ export const TripProvider = ({ children }) => {
         }
     };
 
-    const register = async (username, email, password) => {
+    const register = async (username, email, password, fullName, dob) => {
         try {
-            const res = await api.post('/auth/register', { username, email, password });
+            const res = await api.post('/auth/register', { username, email, password, fullName, dob });
             localStorage.setItem('token', res.data.token);
             setToken(res.data.token);
             setUser(res.data.user);
