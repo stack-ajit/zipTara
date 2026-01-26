@@ -13,21 +13,26 @@ const AuthPage = () => {
     const [formData, setFormData] = useState({ name: '', email: '', password: '' });
     const [submitError, setSubmitError] = useState('');
 
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setSubmitError('');
+        setIsSubmitting(true);
 
-        let success = false;
-        if (isLogin) {
-            success = await login(formData.email, formData.password); // email here is actually 'identifier'
-            if (success) navigate('/');
-        } else {
-            success = await register(formData.name, formData.email, formData.password); // name here is actually 'username'
-            if (success) navigate('/setup-profile');
-        }
-
-        if (!success) {
-            // Error state is handled by store
+        try {
+            let success = false;
+            if (isLogin) {
+                success = await login(formData.email, formData.password);
+                if (success) navigate('/');
+            } else {
+                success = await register(formData.name, formData.email, formData.password);
+                if (success) navigate('/setup-profile');
+            }
+        } catch (err) {
+            console.error("Auth Error:", err);
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
