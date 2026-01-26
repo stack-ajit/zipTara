@@ -6,7 +6,7 @@ import TripCard from '../components/TripCard';
 import { Link } from 'react-router-dom';
 
 const Home = () => {
-    const { trips, publicTrips, user, loading: tripsLoading } = useTrips();
+    const { trips, publicTrips, user, tripsLoading } = useTrips();
     const [searchTerm, setSearchTerm] = useState('');
     const [greeting, setGreeting] = useState('');
 
@@ -44,7 +44,7 @@ const Home = () => {
                     <div className="relative z-10 flex flex-col md:flex-row md:items-start justify-between gap-8">
                         <div className="max-w-2xl w-full">
                             <h1 className="text-4xl font-extrabold text-slate-900 leading-tight mb-4">
-                                Good morning, {user?.name || 'Isabella'}.<br />
+                                {greeting}, {user?.fullName?.split(' ')[0] || user?.username || 'Traveler'}.<br />
                                 Ready for an adventure?
                             </h1>
 
@@ -136,7 +136,11 @@ const Home = () => {
                                 <h2 className="text-2xl font-bold text-slate-900">Get Inspired</h2>
                             </div>
 
-                            {displayPublicTrips.length === 0 ? (
+                            {tripsLoading ? (
+                                <div className="h-full flex items-center justify-center">
+                                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-900"></div>
+                                </div>
+                            ) : displayPublicTrips.length === 0 ? (
                                 <div className="text-center py-12">
                                     <p className="text-gray-500">No public trips found for inspiration yet.</p>
                                 </div>

@@ -2,8 +2,9 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTrips } from '../store/useStore';
 import { ChevronLeft, ChevronRight, Upload, Trash2, Plus, Calendar, DollarSign, Image as ImageIcon, Check, X } from 'lucide-react';
-import { Link } from 'react-router-dom';
+
 import LocationInput from '../components/LocationInput';
+import api from '../services/api';
 
 const TripEditor = () => {
     const { id } = useParams();
@@ -117,20 +118,34 @@ const TripEditor = () => {
         navigate(-1);
     };
 
-    const handleCoverUpload = (e) => {
+    const handleCoverUpload = async (e) => {
         const file = e.target.files[0];
-        if (file && file.size <= 4 * 1024 * 1024) {
-            const reader = new FileReader();
-            reader.onloadend = () => setTrip(prev => ({ ...prev, cover: reader.result }));
-            reader.readAsDataURL(file);
+        if (file) {
+            try {
+                const formData = new FormData();
+                formData.append('image', file);
+                const res = await api.post('/upload', formData, {
+                    headers: { 'Content-Type': 'multipart/form-data' }
+                });
+                setTrip(prev => ({ ...prev, cover: res.data.url }));
+            } catch (err) {
+                console.error("Upload Error:", err);
+                alert("Failed to upload image");
+            }
         }
     };
 
-    const handleStopPhotoUpload = (e, dayId, stopId) => {
+    const handleStopPhotoUpload = async (e, dayId, stopId) => {
         const file = e.target.files[0];
-        if (file && file.size <= 4 * 1024 * 1024) {
-            const reader = new FileReader();
-            reader.onloadend = () => {
+        if (file) {
+            try {
+                const formData = new FormData();
+                formData.append('image', file);
+                // Show temporary loading indicator or optimistic update if desired, but waiting is safer for now
+                const res = await api.post('/upload', formData, {
+                    headers: { 'Content-Type': 'multipart/form-data' }
+                });
+
                 setTrip(prev => ({
                     ...prev,
                     days: prev.days.map(d => {
@@ -139,7 +154,7 @@ const TripEditor = () => {
                                 ...d,
                                 stops: d.stops.map(s => {
                                     if (s.id === stopId) {
-                                        return { ...s, photos: [...(s.photos || []), reader.result] };
+                                        return { ...s, photos: [...(s.photos || []), res.data.url] };
                                     }
                                     return s;
                                 })
@@ -148,8 +163,10 @@ const TripEditor = () => {
                         return d;
                     })
                 }));
-            };
-            reader.readAsDataURL(file);
+            } catch (err) {
+                console.error("Stop Photo Upload Error:", err);
+                alert("Failed to upload photo");
+            }
         }
     };
 

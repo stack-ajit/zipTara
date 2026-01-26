@@ -8,7 +8,8 @@ export const TripProvider = ({ children }) => {
     const [publicTrips, setPublicTrips] = useState([]); // New state for public trips
     const [user, setUser] = useState(null);
     const [token, setToken] = useState(localStorage.getItem('token'));
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(true); // Auth loading
+    const [tripsLoading, setTripsLoading] = useState(true); // Data loading
     const [error, setError] = useState(null);
 
     // Load User on Mount/Token Change
@@ -19,10 +20,6 @@ export const TripProvider = ({ children }) => {
                     setAuthToken(token); // Ensure api header is set
                     const res = await api.get('/auth/me');
                     setUser(res.data);
-
-                    // Fetch trips after user is loaded
-                    fetchTrips();
-                    fetchPublicTrips(); // Also fetch public trips
                 } catch (err) {
                     console.error("Load User Error:", err);
                     localStorage.removeItem('token');
@@ -30,7 +27,17 @@ export const TripProvider = ({ children }) => {
                     setUser(null);
                 }
             }
+            // Auth check done, unblock UI
             setLoading(false);
+
+            // Fetch trips in background if user is logged in
+            if (token) {
+                setTripsLoading(true);
+                Promise.all([fetchTrips(), fetchPublicTrips()])
+                    .finally(() => setTripsLoading(false));
+            } else {
+                setTripsLoading(false);
+            }
         };
         loadUser();
     }, [token]);
@@ -254,11 +261,41 @@ export const TripProvider = ({ children }) => {
             publicTrips.find(t => t.id === id || t._id === id);
     };
 
+    const fetchTrip = async (id) => {
+        try {
+            setLoading(true);
+            const res = await api.get(`/trips/${id}`);
+            const fullTrip = { ...res.data, id: res.data._id };
+
+            // Update the list with the full details so we don't refetch if navigating back and forth within session
+            setTrips(prev => {
+                const parts = prev.some(t => t.id === fullTrip.id)
+                    ? prev.map(t => t.id === fullTrip.id ? fullTrip : t)
+                    : [...prev]; // Don't add to list if not there, or do? Maybe just return it.
+                return parts;
+            });
+            // Also update public trips if it's there
+            setPublicTrips(prev => {
+                return prev.some(t => t.id === fullTrip.id)
+                    ? prev.map(t => t.id === fullTrip.id ? fullTrip : t)
+                    : prev;
+            });
+
+            return fullTrip;
+        } catch (err) {
+            console.error("Fetch Single Trip Error:", err);
+            return null;
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <TripContext.Provider value={{
             trips,
             publicTrips,
             loading,
+            tripsLoading,
             user,
             error,
             login,
@@ -269,6 +306,7 @@ export const TripProvider = ({ children }) => {
             deleteTrip,
             updateTrip,
             getTrip,
+            fetchTrip,
             toggleSaved
         }}>
             {children}

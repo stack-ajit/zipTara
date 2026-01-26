@@ -6,7 +6,7 @@ import { useTrips } from '../store/useStore';
 import TripCard from '../components/TripCard';
 
 const MyTrips = () => {
-    const { trips } = useTrips();
+    const { trips, tripsLoading: loading } = useTrips();
     const [publicOnly, setPublicOnly] = useState(false);
 
     // Filter by publicOnly if toggle is on
@@ -42,7 +42,12 @@ const MyTrips = () => {
                     </div>
                 </div>
 
-                {myTrips.length === 0 ? (
+                {loading ? (
+                    <div className="min-h-[40vh] flex flex-col items-center justify-center">
+                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-900"></div>
+                        <p className="mt-4 text-gray-500">Loading your adventures...</p>
+                    </div>
+                ) : myTrips.length === 0 ? (
                     <div className="min-h-[40vh] flex flex-col items-center justify-center text-center border-2 border-dashed border-gray-200 rounded-3xl bg-gray-50/50">
                         <p className="text-gray-500 mb-4">You haven't created any trips yet.</p>
                         <Link

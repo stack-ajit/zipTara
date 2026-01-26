@@ -11,7 +11,7 @@ import { Link } from 'react-router-dom';
 const TripDetail = () => {
     const { id } = useParams();
     const navigate = useNavigate();
-    const { getTrip, updateTrip, user, loading } = useTrips();
+    const { getTrip, fetchTrip, updateTrip, user, loading } = useTrips();
     const [trip, setTrip] = useState(null);
 
     // Modals state
@@ -24,12 +24,28 @@ const TripDetail = () => {
     useEffect(() => {
         if (loading) return;
         const t = getTrip(id);
-        if (t) {
-            setTrip(t);
-        } else {
-            navigate('/');
-        }
-    }, [id, getTrip, navigate, loading]);
+
+        const loadDetails = async () => {
+            if (t) {
+                // If trip exists but is a summary (no days), fetch full details
+                if (!t.days) {
+                    const fullTrip = await fetchTrip(id);
+                    if (fullTrip) setTrip(fullTrip);
+                } else {
+                    setTrip(t);
+                }
+            } else {
+                // If not in store at all (direct link), fetch it
+                const fullTrip = await fetchTrip(id);
+                if (fullTrip) {
+                    setTrip(fullTrip);
+                } else {
+                    navigate('/');
+                }
+            }
+        };
+        loadDetails();
+    }, [id, getTrip, fetchTrip, navigate, loading]);
 
     if (loading) {
         return (
@@ -41,7 +57,15 @@ const TripDetail = () => {
         );
     }
 
-    if (!trip) return null;
+    if (!trip || !trip.days) {
+        return (
+            <Layout>
+                <div className="flex justify-center items-center min-h-[50vh]">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
+                </div>
+            </Layout>
+        );
+    }
 
     // Determine ownership
     const tripUserId = (typeof trip.user === 'object' && trip.user !== null) ? trip.user._id : trip.user;
