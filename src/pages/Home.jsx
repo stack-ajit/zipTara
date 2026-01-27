@@ -36,25 +36,25 @@ const Home = () => {
         <Layout>
             <div className="space-y-8 pb-20">
                 {/* Hero / Welcome Section */}
-                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-3xl p-8 sm:p-12 relative overflow-hidden">
+                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-3xl p-6 sm:p-8 relative overflow-hidden">
                     {/* Abstract Background Decoration */}
                     <div className="absolute top-0 right-0 -mr-20 -mt-20 w-96 h-96 bg-blue-100 rounded-full blur-3xl opacity-50"></div>
                     <div className="absolute bottom-0 left-0 -ml-20 -mb-20 w-80 h-80 bg-purple-100 rounded-full blur-3xl opacity-50"></div>
 
-                    <div className="relative z-10 flex flex-col md:flex-row md:items-start justify-between gap-8">
+                    <div className="relative z-10 flex flex-col md:flex-row md:items-start justify-between gap-6">
                         <div className="max-w-2xl w-full">
-                            <h1 className="text-4xl font-extrabold text-slate-900 leading-tight mb-4">
+                            <h1 className="text-3xl font-extrabold text-slate-900 leading-tight mb-2">
                                 {greeting}, {user?.fullName?.split(' ')[0] || user?.username || 'Traveler'}.<br />
                                 Ready for an adventure?
                             </h1>
 
                             {/* Search Bar & Toggle Row */}
-                            <div className="mt-8 flex items-center gap-4">
+                            <div className="mt-4 flex items-center gap-4">
                                 <div className="relative flex-grow max-w-lg">
                                     <input
                                         type="text"
                                         placeholder="Search destinations, trails, or tags..."
-                                        className="w-full pl-6 pr-4 py-4 rounded-2xl border-0 shadow-lg text-gray-700 bg-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all"
+                                        className="w-full pl-6 pr-4 py-3 rounded-2xl border-0 shadow-lg text-gray-700 bg-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all"
                                         value={searchTerm}
                                         onChange={(e) => setSearchTerm(e.target.value)}
                                     />
@@ -66,7 +66,7 @@ const Home = () => {
                             </div>
 
                             {/* Tags */}
-                            <div className="flex flex-wrap gap-3 mt-6">
+                            <div className="flex flex-wrap gap-2 mt-4">
                                 {tags.map(tag => (
                                     <button key={tag} className="px-4 py-2 bg-white/60 backdrop-blur-sm border border-white/50 rounded-full text-sm font-medium text-slate-600 hover:bg-white hover:text-blue-600 transition-all shadow-sm">
                                         {tag}
@@ -79,11 +79,13 @@ const Home = () => {
                         <div className="hidden lg:block bg-white/80 backdrop-blur-md p-4 rounded-2xl shadow-sm border border-white/50 min-w-[200px]">
                             <div className="flex items-center space-x-3">
                                 <div className="bg-orange-100 p-2 rounded-full text-orange-500">
-                                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                                    <MapPin className="w-6 h-6" /> {/* Changed icon to MapPin */}
                                 </div>
                                 <div>
-                                    <p className="font-bold text-slate-800">24°C, Paris, France</p>
-                                    <p className="text-xs text-gray-500 font-medium">0 Trips Created</p>
+                                    <p className="font-bold text-slate-800">Your Stats</p>
+                                    <p className="text-xs text-gray-500 font-medium">
+                                        {stats.totalTrips} {stats.totalTrips === 1 ? 'Trip' : 'Trips'}
+                                    </p>
                                 </div>
                             </div>
                         </div>
@@ -113,17 +115,17 @@ const Home = () => {
                                     <MapPin className="text-gray-400 w-8 h-8" />
                                 </div>
                                 <h3 className="text-xl font-bold text-gray-900 mb-2">
-                                    {trips.length === 0 ? 'No trips yet' : 'Plan your next trip'}
+                                    {trips.length === 0 ? 'No trips yet' : 'zip your next trip'}
                                 </h3>
                                 <p className="text-gray-500 max-w-[200px] mb-8 text-sm">
-                                    {trips.length === 0 ? 'Create your first trip to start your travel journal.' : 'Ready for a new adventure? Start planning now.'}
+                                    {trips.length === 0 ? 'Create your first trip to start your travel journal.' : 'Ready for a new adventure? Start zipping now.'}
                                 </p>
                                 <Link
                                     to="/trip/new"
                                     className="bg-slate-900 text-white px-6 py-3 rounded-xl font-medium shadow-xl hover:bg-black transition-all flex items-center gap-2"
                                 >
                                     <span className="text-lg pb-1">+</span>
-                                    <span>Create your first trip</span>
+                                    <span>{trips.length === 0 ? 'Create your first trip' : 'Create new trip'}</span>
                                 </Link>
                             </div>
                         </div>

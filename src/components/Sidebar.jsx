@@ -15,9 +15,13 @@ const Sidebar = () => {
     return (
         <aside className="w-56 bg-slate-900 text-white min-h-screen fixed left-0 top-0 flex flex-col z-40">
             {/* Logo */}
+            {/* Logo */}
             <div className="p-6 flex items-center space-x-3 mb-6">
                 <MapPin className="text-white w-6 h-6" />
-                <h1 className="text-xl font-bold tracking-tight">zipTara</h1>
+                <span className="text-2xl font-bold" style={{ fontFamily: 'Amaranth, sans-serif' }}>
+                    <span className="text-white">zip</span>
+                    <span className="text-red-500">Tara</span>
+                </span>
             </div>
 
             {/* Navigation */}

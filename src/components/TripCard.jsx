@@ -158,7 +158,12 @@ const TripCard = ({ trip }) => {
                     </div>
 
                     <div className="mt-auto pt-3 border-t border-gray-50 flex items-center justify-between text-xs text-gray-400">
-                        <span>{trip.days?.length || 0} days</span>
+                        <span>
+                            {trip.days?.length
+                                ? trip.days.length
+                                : Math.max(1, Math.ceil((new Date(trip.endDate) - new Date(trip.startDate)) / (1000 * 60 * 60 * 24)) + 1)
+                            } days
+                        </span>
                         {trip.isPublic && <span className="flex items-center text-indigo-400"><Share2 className="w-3 h-3 mr-1" /> Public</span>}
                     </div>
                 </div>

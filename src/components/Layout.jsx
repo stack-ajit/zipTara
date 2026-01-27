@@ -1,6 +1,8 @@
 
 import Sidebar from './Sidebar';
 
+import Footer from './Footer';
+
 const Layout = ({ children }) => {
 
     // Provide context or props to children if needed, 
@@ -16,17 +18,14 @@ const Layout = ({ children }) => {
             <Sidebar />
 
             {/* Main Content Area */}
-            <div className="flex-1 ml-56">
+            <div className="flex-1 ml-56 flex flex-col min-h-screen gap-10">
                 {/* Main Content */}
-                <main className="w-full px-6">
+                <main className="w-full px-6 flex-grow">
                     {children}
                 </main>
 
                 {/* Footer */}
-                <footer className="max-w-7xl mx-auto px-8 py-8 flex flex-col md:flex-row justify-between items-center text-xs text-gray-400 border-t border-gray-100 mt-auto">
-                    <p>© {new Date().getFullYear()} Travel Trails. Built for explorers.</p>
-                    <p className="mt-2 md:mt-0">Meet your Travel Goals.</p>
-                </footer>
+                <Footer />
             </div>
 
         </div>
