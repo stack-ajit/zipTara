@@ -44,7 +44,7 @@ const Footer = () => {
                         title="Send us an email"
                     >
                         <Mail className="w-3 h-3" />
-                        <span>founders@ziptara.in</span>
+                        <span>founder@ziptara.in</span>
                     </a>
                 </div>
 
