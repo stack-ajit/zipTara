@@ -47,15 +47,18 @@ const ProfileSetupPage = () => {
                         />
                     </div>
 
-                    <div className="relative">
-                        <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
-                        <input
-                            type="date"
-                            required
-                            className="w-full pl-12 pr-4 py-3 rounded-xl border border-gray-200 focus:border-gray-900 focus:ring-2 focus:ring-gray-100 outline-none transition-all bg-gray-50/50 text-gray-600"
-                            value={formData.dob}
-                            onChange={(e) => setFormData({ ...formData, dob: e.target.value })}
-                        />
+                    <div>
+                        <label className="block text-gray-500 text-xs mb-1.5 ml-1">Date of Birth</label>
+                        <div className="relative">
+                            <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+                            <input
+                                type="date"
+                                required
+                                className="w-full pl-12 pr-4 py-3 rounded-xl border border-gray-200 focus:border-gray-900 focus:ring-2 focus:ring-gray-100 outline-none transition-all bg-gray-50/50 text-gray-600"
+                                value={formData.dob}
+                                onChange={(e) => setFormData({ ...formData, dob: e.target.value })}
+                            />
+                        </div>
                     </div>
 
                     <button

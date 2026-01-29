@@ -15,6 +15,7 @@ app.use(cors({
     allowedHeaders: ['Content-Type', 'Authorization', 'x-auth-token']
 }));
 app.use(express.json({ limit: '50mb' })); // Increased limit for base64 images (temporary)
+app.use('/uploads', express.static('uploads')); // Serve uploaded files statically
 
 // Database Connection
 mongoose.set('strictQuery', false); // Suppress deprecation warning

@@ -1,4 +1,4 @@
-import { Search, MapPin } from 'lucide-react';
+import { Search, MapPin, Sparkles } from 'lucide-react';
 import { useState, useMemo, useEffect } from 'react';
 import Layout from '../components/Layout';
 import { useTrips } from '../store/useStore';
@@ -10,6 +10,7 @@ const Home = () => {
     const { trips, publicTrips, user, tripsLoading } = useTrips();
     const [searchTerm, setSearchTerm] = useState('');
     const [greeting, setGreeting] = useState('');
+    const [searchFocused, setSearchFocused] = useState(false);
 
     useEffect(() => {
         const hour = new Date().getHours();
@@ -40,67 +41,102 @@ const Home = () => {
         <Layout>
             <div className="space-y-8 pb-20">
                 {/* Hero / Welcome Section */}
-                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-3xl p-6 sm:p-8 relative overflow-hidden">
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5 }}
+                    className="bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 rounded-3xl p-6 sm:p-8 relative overflow-hidden"
+                >
                     {/* Abstract Background Decoration */}
-                    <div className="absolute top-0 right-0 -mr-20 -mt-20 w-96 h-96 bg-blue-100 rounded-full blur-3xl opacity-50"></div>
-                    <div className="absolute bottom-0 left-0 -ml-20 -mb-20 w-80 h-80 bg-purple-100 rounded-full blur-3xl opacity-50"></div>
+                    <div className="absolute top-0 right-0 -mr-20 -mt-20 w-96 h-96 bg-blue-200 rounded-full blur-3xl opacity-40 animate-pulse"></div>
+                    <div className="absolute bottom-0 left-0 -ml-20 -mb-20 w-80 h-80 bg-purple-200 rounded-full blur-3xl opacity-40"></div>
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-pink-100 rounded-full blur-3xl opacity-30"></div>
 
                     <div className="relative z-10 flex flex-col md:flex-row md:items-start justify-between gap-6">
                         <div className="max-w-2xl w-full">
-                            <h1 className="text-3xl font-extrabold text-slate-900 leading-tight mb-2">
-                                {greeting}, {user?.fullName?.split(' ')[0] || user?.username || 'Traveler'}.<br />
-                                Ready for an adventure?
-                            </h1>
+                            <motion.h1
+                                initial={{ opacity: 0, x: -20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ duration: 0.6, delay: 0.2 }}
+                                className="text-3xl font-extrabold text-slate-900 leading-tight mb-2"
+                            >
+                                {greeting}, {user?.fullName?.split(' ')[0] || user?.username || 'Traveler'}!
+                                <motion.span
+                                    className="inline-block ml-2"
+                                    animate={{ rotate: [0, 14, -8, 14, -4, 10, 0] }}
+                                    transition={{ duration: 2.5, repeat: Infinity, repeatDelay: 3 }}
+                                >
+                                    👋
+                                </motion.span>
+                                <br />
+                                <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                                    Ready for an adventure?
+                                </span>
+                            </motion.h1>
 
                             {/* Search Bar & Toggle Row */}
-                            <div className="mt-4 flex items-center gap-4">
-                                <div className="relative flex-grow max-w-lg">
+                            <motion.div
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.5, delay: 0.4 }}
+                                className="mt-4 flex items-center gap-4"
+                            >
+                                <div className={`relative flex-grow max-w-lg transition-all duration-300 ${searchFocused ? 'scale-[1.02]' : ''}`}>
+                                    <div className={`absolute -inset-1 bg-gradient-to-r from-blue-500 to-purple-500 rounded-2xl blur-lg transition-opacity duration-300 ${searchFocused ? 'opacity-30' : 'opacity-0'}`}></div>
                                     <input
                                         type="text"
                                         placeholder="Search destinations, trails, or tags..."
-                                        className="w-full pl-6 pr-4 py-3 rounded-2xl border-0 shadow-lg text-gray-700 bg-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all"
+                                        className="relative w-full pl-6 pr-12 py-3.5 rounded-2xl border-0 shadow-lg text-gray-700 bg-white placeholder-gray-400 focus:ring-2 focus:ring-purple-500/30 outline-none transition-all"
                                         value={searchTerm}
                                         onChange={(e) => setSearchTerm(e.target.value)}
+                                        onFocus={() => setSearchFocused(true)}
+                                        onBlur={() => setSearchFocused(false)}
                                     />
-                                    <div className="absolute right-2 top-2 bottom-2 bg-transparent text-gray-400 w-12 flex items-center justify-center">
+                                    <div className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
                                         <Search className="w-5 h-5" />
                                     </div>
-
                                 </div>
-
-                                {/* Tags */}
-
-                            </div>
-
-                            {/* Weather/Stats Widget */}
-
-
+                            </motion.div>
                         </div>
 
-                        {/* Weather/Stats Widget */}
-                        <div className="hidden lg:block bg-white/80 backdrop-blur-md p-4 rounded-2xl shadow-sm border border-white/50 min-w-[200px]">
+                        {/* Stats Widget */}
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.9 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            transition={{ duration: 0.5, delay: 0.3 }}
+                            className="hidden lg:block bg-white/80 backdrop-blur-md p-5 rounded-2xl shadow-lg border border-white/50 min-w-[220px]"
+                        >
                             <div className="flex items-center space-x-3">
-                                <div className="bg-orange-100 p-2 rounded-full text-orange-500">
-                                    <MapPin className="w-6 h-6" /> {/* Changed icon to MapPin */}
-                                </div>
+                                <motion.div
+                                    animate={{ y: [0, -4, 0] }}
+                                    transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                                    className="bg-gradient-to-br from-orange-400 to-red-500 p-3 rounded-xl text-white shadow-lg"
+                                >
+                                    <MapPin className="w-6 h-6" />
+                                </motion.div>
                                 <div>
                                     <p className="font-bold text-slate-800">Your Stats</p>
-                                    <p className="text-xs text-gray-500 font-medium">
-                                        {stats.totalTrips} {stats.totalTrips === 1 ? 'Trip' : 'Trips'}
+                                    <p className="text-sm text-gray-500 font-medium">
+                                        <span className="text-2xl font-bold text-slate-900">{stats.totalTrips}</span> {stats.totalTrips === 1 ? 'Trip' : 'Trips'}
                                     </p>
                                 </div>
                             </div>
-                        </div>
+                        </motion.div>
                     </div>
-                </div>
+                </motion.div>
 
                 {/* Main Grid Content */}
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
 
                     {/* Left Column: My Trips / Create Trip CTA */}
-                    <div className="lg:col-span-5 xl:col-span-4">
+                    <motion.div
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.5, delay: 0.2 }}
+                        className="lg:col-span-5 xl:col-span-4"
+                    >
                         {/* Card with topographic pattern */}
-                        <div className="bg-white rounded-3xl p-8 shadow-sm border border-gray-100 relative overflow-hidden min-h-[400px] flex flex-col items-center justify-center text-center">
+                        <div className="group bg-white rounded-3xl p-8 shadow-sm border border-gray-100 relative overflow-hidden min-h-[400px] flex flex-col items-center justify-center text-center hover:shadow-xl hover:border-gray-200 transition-all duration-300">
                             {/* Topographic pattern simulation via SVG or gradient/image if available, else simple dashed border */}
                             <div className="absolute inset-0 opacity-5 pointer-events-none" style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%239C92AC' fill-opacity='0.2' fill-rule='evenodd'/%3E%3C/svg%3E")` }}></div>
                             <div className="absolute inset-0 opacity-10 pointer-events-none flex items-center justify-center">
@@ -113,9 +149,13 @@ const Home = () => {
                             </div>
 
                             <div className="relative z-10 w-full flex flex-col items-center">
-                                <div className="w-16 h-16 bg-gray-50 rounded-2xl flex items-center justify-center mb-6">
-                                    <MapPin className="text-gray-400 w-8 h-8" />
-                                </div>
+                                <motion.div
+                                    animate={{ y: [0, -8, 0] }}
+                                    transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                                    className="w-16 h-16 bg-gradient-to-br from-slate-100 to-slate-200 rounded-2xl flex items-center justify-center mb-6 shadow-inner"
+                                >
+                                    <MapPin className="text-slate-500 w-8 h-8" />
+                                </motion.div>
                                 <h3 className="text-xl font-bold text-gray-900 mb-2">
                                     {trips.length === 0 ? 'No trips yet' : 'zip your next trip'}
                                 </h3>
@@ -124,18 +164,24 @@ const Home = () => {
                                 </p>
                                 <Link
                                     to="/trip/new"
-                                    className="bg-slate-900 text-white px-6 py-3 rounded-xl font-medium shadow-xl hover:bg-black transition-all flex items-center gap-2"
+                                    className="group/btn relative bg-slate-900 text-white px-6 py-3 rounded-xl font-medium shadow-xl hover:bg-black hover:scale-105 transition-all duration-300 flex items-center gap-2 overflow-hidden"
                                 >
-                                    <span className="text-lg pb-1">+</span>
-                                    <span>{trips.length === 0 ? 'Create your first trip' : 'Create new trip'}</span>
+                                    <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 opacity-0 group-hover/btn:opacity-100 transition-opacity duration-300"></div>
+                                    <span className="relative text-lg pb-0.5">+</span>
+                                    <span className="relative">{trips.length === 0 ? 'Create your first trip' : 'Create new trip'}</span>
                                 </Link>
                             </div>
                         </div>
-                    </div>
+                    </motion.div>
 
                     {/* Right Column: Get Inspired */}
-                    <div className="lg:col-span-7 xl:col-span-8">
-                        <div className="bg-white rounded-3xl p-8 shadow-sm border border-gray-100 h-full">
+                    <motion.div
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.5, delay: 0.3 }}
+                        className="lg:col-span-7 xl:col-span-8"
+                    >
+                        <div className="bg-white rounded-3xl p-8 shadow-sm border border-gray-100 h-full hover:shadow-lg transition-shadow duration-300">
                             <div className="flex items-center justify-between mb-6">
                                 <h2 className="text-2xl font-bold text-slate-900">Get Inspired</h2>
                             </div>
@@ -159,7 +205,7 @@ const Home = () => {
                                 </div>
                             )}
                         </div>
-                    </div>
+                    </motion.div>
                 </div>
             </div>
         </Layout>

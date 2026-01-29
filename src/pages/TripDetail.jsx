@@ -47,11 +47,17 @@ const TripDetail = () => {
     }, [id, getTrip, fetchTrip, navigate, loading]);
 
     // Scroll to comments section if hash is #comments
+    const scrolledRef = useRef(false);
+
+    // Scroll to comments section if hash is #comments
     useEffect(() => {
-        if (location.hash === '#comments' && trip && commentSectionRef.current) {
+        if (location.hash === '#comments' && trip && commentSectionRef.current && !scrolledRef.current) {
             setTimeout(() => {
                 commentSectionRef.current.scrollIntoView({ behavior: 'smooth' });
+                scrolledRef.current = true;
             }, 300);
+        } else if (location.hash !== '#comments') {
+            scrolledRef.current = false;
         }
     }, [location.hash, trip]);
 

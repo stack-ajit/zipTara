@@ -148,12 +148,15 @@ const TripEditor = () => {
     };
 
     const handleStopPhotoUpload = async (e, dayId, stopId) => {
-        const file = e.target.files[0];
-        if (file) {
+        const files = e.target.files;
+        if (files && files.length > 0) {
             try {
                 const formData = new FormData();
-                formData.append('image', file);
-                // Show temporary loading indicator or optimistic update if desired, but waiting is safer for now
+                // Append all files with key 'images'
+                for (let i = 0; i < files.length; i++) {
+                    formData.append('images', files[i]);
+                }
+
                 const res = await api.post('/upload', formData, {
                     headers: { 'Content-Type': 'multipart/form-data' }
                 });
@@ -166,7 +169,9 @@ const TripEditor = () => {
                                 ...d,
                                 stops: d.stops.map(s => {
                                     if (s.id === stopId) {
-                                        return { ...s, photos: [...(s.photos || []), res.data.url] };
+                                        // Handle both single url (legacy backup) and urls array
+                                        const newPhotos = res.data.urls ? res.data.urls : (res.data.url ? [res.data.url] : []);
+                                        return { ...s, photos: [...(s.photos || []), ...newPhotos] };
                                     }
                                     return s;
                                 })
@@ -177,7 +182,7 @@ const TripEditor = () => {
                 }));
             } catch (err) {
                 console.error("Stop Photo Upload Error:", err);
-                alert("Failed to upload photo");
+                alert("Failed to upload photos");
             }
         }
     };
@@ -519,6 +524,7 @@ const TripEditor = () => {
                                                             <input
                                                                 id={`photo-upload-${stop.id}`}
                                                                 type="file"
+                                                                multiple
                                                                 className="hidden"
                                                                 accept="image/*"
                                                                 onChange={(e) => handleStopPhotoUpload(e, day.id, stop.id)}
@@ -553,10 +559,31 @@ const TripEditor = () => {
                                             ))
                                         )}
                                     </div>
+
+                                    {/* Add Stop Button at Bottom */}
+                                    {day.stops.length > 0 && (
+                                        <button
+                                            onClick={() => addStop(day.id)}
+                                            className="w-full mt-4 py-2.5 border-2 border-dashed border-gray-300 text-gray-500 rounded-lg text-xs font-bold flex items-center justify-center hover:border-gray-400 hover:text-gray-700 transition-colors"
+                                        >
+                                            <Plus className="w-3 h-3 mr-1" /> Add another stop
+                                        </button>
+                                    )}
                                 </div>
                             ))}
                         </div>
+
+                        {/* Add Day Button at Bottom */}
+                        {trip.days.length > 0 && (
+                            <button
+                                onClick={addDay}
+                                className="w-full mt-6 py-3 border-2 border-dashed border-gray-300 text-gray-600 rounded-xl text-sm font-bold flex items-center justify-center hover:border-gray-400 hover:text-gray-800 transition-colors"
+                            >
+                                <Plus className="w-4 h-4 mr-1.5" /> Add another day
+                            </button>
+                        )}
                     </div>
+
 
                 </div>
 

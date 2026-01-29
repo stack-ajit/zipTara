@@ -2,7 +2,7 @@ import { Home, Map, Bookmark, LogOut, MapPin, Info, User } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 import { useTrips } from '../store/useStore';
 
-const Sidebar = () => {
+const Sidebar = ({ onClose }) => {
     const { logout, user } = useTrips();
 
     const navItems = [
@@ -13,9 +13,13 @@ const Sidebar = () => {
         { icon: Info, label: 'About Us', path: '/about' },
     ];
 
+    const handleNavClick = () => {
+        // Close sidebar on mobile after navigation
+        if (onClose) onClose();
+    };
+
     return (
-        <aside className="w-56 bg-slate-900 text-white min-h-screen fixed left-0 top-0 flex flex-col z-40">
-            {/* Logo */}
+        <aside className="w-56 bg-slate-900 text-white min-h-screen flex flex-col">
             {/* Logo */}
             <div className="p-6 flex items-center space-x-3 mb-6">
                 <MapPin className="text-white w-6 h-6" />
@@ -31,6 +35,7 @@ const Sidebar = () => {
                     <NavLink
                         key={item.path}
                         to={item.path}
+                        onClick={handleNavClick}
                         className={({ isActive }) =>
                             `flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 group ${isActive
                                 ? 'bg-white/10 text-white font-medium shadow-sm'
@@ -47,7 +52,7 @@ const Sidebar = () => {
             {/* Footer Actions */}
             <div className="p-4 border-t border-white/10">
                 <button
-                    onClick={logout}
+                    onClick={() => { logout(); if (onClose) onClose(); }}
                     className="w-full flex items-center space-x-3 px-4 py-3 text-gray-400 hover:text-white hover:bg-white/5 rounded-xl transition-all"
                 >
                     <LogOut className="w-5 h-5" />
@@ -59,3 +64,4 @@ const Sidebar = () => {
 };
 
 export default Sidebar;
+
