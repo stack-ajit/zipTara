@@ -60,7 +60,7 @@ const TripEditor = () => {
                 startDate: '',
                 endDate: '',
                 cover: '',
-                isPublic: false,
+                isPublic: true,
                 tags: [],
                 days: []
             });
@@ -348,27 +348,35 @@ const TripEditor = () => {
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                                <input
-                                    type="date"
-                                    className="w-full p-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-gray-900 outline-none text-sm text-gray-600"
-                                    value={trip.startDate}
-                                    onChange={(e) => setTrip(prev => ({ ...prev, startDate: e.target.value }))}
-                                />
-                                <input
-                                    type="date"
-                                    className="w-full p-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-gray-900 outline-none text-sm text-gray-600"
-                                    value={trip.endDate}
-                                    onChange={(e) => setTrip(prev => ({ ...prev, endDate: e.target.value }))}
-                                />
-                                <label className="flex items-center justify-between p-3 rounded-lg border border-gray-200 cursor-pointer hover:bg-gray-50 transition-colors">
-                                    <div className="text-sm">
-                                        <span className="block font-medium text-gray-700">{trip.isPublic ? 'Public' : 'Private'}</span>
-                                        <span className="text-[10px] text-gray-400">{trip.isPublic ? 'Visible to all' : 'Only you can see'}</span>
-                                    </div>
-                                    <div className={`w-8 h-4 rounded-full relative transition-colors ${trip.isPublic ? 'bg-gray-900' : 'bg-gray-200'}`} onClick={(e) => { e.preventDefault(); setTrip(prev => ({ ...prev, isPublic: !prev.isPublic })); }}>
-                                        <div className={`absolute top-0.5 left-0.5 w-3 h-3 bg-white rounded-full transition-transform ${trip.isPublic ? 'translate-x-4' : 'translate-x-0'}`} />
-                                    </div>
-                                </label>
+                                <div>
+                                    <label className="text-xs font-bold text-gray-500 mb-1 block">From</label>
+                                    <input
+                                        type="date"
+                                        className="w-full p-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-gray-900 outline-none text-sm text-gray-600"
+                                        value={trip.startDate}
+                                        onChange={(e) => setTrip(prev => ({ ...prev, startDate: e.target.value }))}
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-xs font-bold text-gray-500 mb-1 block">To</label>
+                                    <input
+                                        type="date"
+                                        className="w-full p-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-gray-900 outline-none text-sm text-gray-600"
+                                        value={trip.endDate}
+                                        onChange={(e) => setTrip(prev => ({ ...prev, endDate: e.target.value }))}
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-xs font-bold text-gray-500 mb-1 block">Visibility</label>
+                                    <label className="flex items-center justify-between p-3 rounded-lg border border-gray-200 cursor-pointer hover:bg-gray-50 transition-colors h-[46px]">
+                                        <div className="text-sm">
+                                            <span className="block font-medium text-gray-700">{trip.isPublic ? 'Public' : 'Private'}</span>
+                                        </div>
+                                        <div className={`w-8 h-4 rounded-full relative transition-colors ${trip.isPublic ? 'bg-gray-900' : 'bg-gray-200'}`} onClick={(e) => { e.preventDefault(); setTrip(prev => ({ ...prev, isPublic: !prev.isPublic })); }}>
+                                            <div className={`absolute top-0.5 left-0.5 w-3 h-3 bg-white rounded-full transition-transform ${trip.isPublic ? 'translate-x-4' : 'translate-x-0'}`} />
+                                        </div>
+                                    </label>
+                                </div>
                             </div>
 
                             <div className="w-full">
@@ -544,10 +552,11 @@ const TripEditor = () => {
                                                         {stop.photos && stop.photos.length > 0 && (
                                                             <div className="flex gap-2 overflow-x-auto pb-2">
                                                                 {stop.photos.map((photo, pIndex) => (
-                                                                    <div key={pIndex} className="relative w-16 h-16 flex-shrink-0 rounded-lg overflow-hidden border border-gray-200 group/photo cursor-pointer" onClick={() => openLightbox(photo, pIndex, stop.id, day.id)}>
+                                                                    <div key={pIndex} className="relative w-16 h-16 flex-shrink-0 rounded-lg overflow-hidden border border-gray-200 group/photo cursor-pointer" onClick={(e) => { e.stopPropagation(); openLightbox(photo, pIndex, stop.id, day.id); }}>
                                                                         <img src={photo} alt="Stop" className="w-full h-full object-cover" />
                                                                         <button
-                                                                            onClick={() => {
+                                                                            onClick={(e) => {
+                                                                                e.stopPropagation();
                                                                                 setTrip(prev => ({
                                                                                     ...prev,
                                                                                     days: prev.days.map(d => d.id === day.id ? {
@@ -557,7 +566,8 @@ const TripEditor = () => {
                                                                                     } : d)
                                                                                 }));
                                                                             }}
-                                                                            className="absolute top-0.5 right-0.5 bg-black/50 text-white rounded-full p-0.5 opacity-0 group-hover/photo:opacity-100 transition-opacity"
+                                                                            // Removed opacity-0 to make it always visible on mobile, or use group-hover for desktop
+                                                                            className="absolute top-0.5 right-0.5 bg-black/60 text-white rounded-full p-1 md:opacity-0 md:group-hover/photo:opacity-100 transition-opacity z-10"
                                                                         >
                                                                             <X className="w-3 h-3" />
                                                                         </button>
