@@ -1,23 +1,22 @@
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useTrips } from '../store/useStore';
 import Layout from '../components/Layout';
 import DayCard from '../components/DayCard';
 import JournalView from '../components/JournalView'; // Import JournalView
-import StopForm from '../components/StopForm';
-import { useState, useEffect } from 'react';
-import { Share2, Plus, Calendar, MapPin, ArrowLeft, BookOpen, List, Eye } from 'lucide-react';
+import { Share2, Plus, Calendar, MapPin, ArrowLeft, BookOpen, List, Eye, Edit } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
+import CommentSection from '../components/CommentSection';
 
 const TripDetail = () => {
     const { id } = useParams();
     const navigate = useNavigate();
+    const location = useLocation();
     const { getTrip, fetchTrip, updateTrip, user, loading } = useTrips();
     const [trip, setTrip] = useState(null);
+    const commentSectionRef = useRef(null);
 
     // Modals state
-    const [activeDayId, setActiveDayId] = useState(null);
-    const [editingStop, setEditingStop] = useState(null);
-
     // View Mode State
     const [viewMode, setViewMode] = useState('journal'); // Default to Journal (Photo) view
 
@@ -47,6 +46,15 @@ const TripDetail = () => {
         loadDetails();
     }, [id, getTrip, fetchTrip, navigate, loading]);
 
+    // Scroll to comments section if hash is #comments
+    useEffect(() => {
+        if (location.hash === '#comments' && trip && commentSectionRef.current) {
+            setTimeout(() => {
+                commentSectionRef.current.scrollIntoView({ behavior: 'smooth' });
+            }, 300);
+        }
+    }, [location.hash, trip]);
+
     if (loading) {
         return (
             <Layout>
@@ -71,78 +79,6 @@ const TripDetail = () => {
     const tripUserId = (typeof trip.user === 'object' && trip.user !== null) ? trip.user._id : trip.user;
     const isOwner = user && (tripUserId === user._id || tripUserId === user.id);
 
-    const handleAddDay = () => {
-        if (!isOwner) return;
-        const newDayId = `day${trip.days.length + 1}-${crypto.randomUUID()}`;
-
-        let nextDate = trip.startDate;
-        if (trip.days.length > 0) {
-            const lastDate = new Date(trip.days[trip.days.length - 1].date);
-            lastDate.setDate(lastDate.getDate() + 1);
-            nextDate = lastDate.toISOString().split('T')[0];
-        }
-
-        const newDay = {
-            id: newDayId,
-            date: nextDate,
-            stops: []
-        };
-
-        updateTrip({
-            ...trip,
-            days: [...trip.days, newDay]
-        });
-    };
-
-    const handleDeleteDay = (dayId) => {
-        if (!isOwner) return;
-        if (confirm('Delete this entire day and its stops?')) {
-            updateTrip({
-                ...trip,
-                days: trip.days.filter((d) => d.id !== dayId)
-            });
-        }
-    };
-
-    const handleAddStop = (formData) => {
-        if (!isOwner) return;
-        const newStop = { ...formData, id: crypto.randomUUID() };
-        const updatedDays = trip.days.map((day) => {
-            if (day.id === activeDayId) {
-                return { ...day, stops: [...day.stops, newStop] };
-            }
-            return day;
-        });
-        updateTrip({ ...trip, days: updatedDays });
-        setActiveDayId(null);
-    };
-
-    const handleEditStop = (formData) => {
-        if (!isOwner) return;
-        const updatedDays = trip.days.map((day) => {
-            if (day.id === editingStop.dayId) {
-                return {
-                    ...day,
-                    stops: day.stops.map(s => s.id === editingStop.stop.id ? { ...s, ...formData } : s)
-                };
-            }
-            return day;
-        });
-        updateTrip({ ...trip, days: updatedDays });
-        setEditingStop(null);
-    };
-
-    const handleDeleteStop = (dayId, stopId) => {
-        if (!isOwner) return;
-        const updatedDays = trip.days.map((day) => {
-            if (day.id === dayId) {
-                return { ...day, stops: day.stops.filter((s) => s.id !== stopId) };
-            }
-            return day;
-        });
-        updateTrip({ ...trip, days: updatedDays });
-    };
-
     const handleShare = () => {
         if (trip.isPublic) {
             const url = `${window.location.origin}/trip/${trip.id}?view=journal`; // Can add query param support later
@@ -165,7 +101,7 @@ const TripDetail = () => {
                             <button
                                 onClick={() => setViewMode('list')}
                                 className="bg-gray-900 text-white p-4 rounded-full shadow-xl hover:bg-black transition-transform hover:scale-105 flex items-center justify-center tooltip-trigger"
-                                title="Switch to Editor Mode"
+                                title="View as Timeline"
                             >
                                 <List className="w-6 h-6" />
                             </button>
@@ -182,6 +118,11 @@ const TripDetail = () => {
                     </div>
 
                     <JournalView trip={trip} />
+
+                    {/* Comments */}
+                    <div ref={commentSectionRef}>
+                        <CommentSection tripId={id} />
+                    </div>
                 </div>
             </Layout>
         );
@@ -237,13 +178,13 @@ const TripDetail = () => {
 
                             <div className="flex space-x-3">
                                 {isOwner && (
-                                    <button
-                                        onClick={handleAddDay}
+                                    <Link
+                                        to={`/trip/${trip.id}/edit`}
                                         className="flex items-center space-x-2 bg-gray-900 hover:bg-gray-800 text-white px-4 py-2.5 rounded-xl text-sm font-bold shadow-md transition-all active:scale-95"
                                     >
-                                        <Plus className="w-4 h-4" />
-                                        <span>Add Day</span>
-                                    </button>
+                                        <Edit className="w-4 h-4" />
+                                        <span>Edit Trip</span>
+                                    </Link>
                                 )}
                                 <button
                                     onClick={handleShare}
@@ -266,11 +207,7 @@ const TripDetail = () => {
                             key={day.id}
                             day={day}
                             index={index}
-                            onDeleteDay={() => handleDeleteDay(day.id)}
-                            onAddStop={() => setActiveDayId(day.id)}
-                            onDeleteStop={(stopId) => handleDeleteStop(day.id, stopId)}
-                            onEditStop={(stop) => setEditingStop({ dayId: day.id, stop })}
-                            readOnly={!isOwner}
+                            readOnly={true}
                         />
                     ))}
                 </div>
@@ -282,22 +219,20 @@ const TripDetail = () => {
                             {isOwner ? 'Start planning your itinerary by adding a day.' : 'This trip has no days added yet.'}
                         </p>
                         {isOwner && (
-                            <button onClick={handleAddDay} className="text-indigo-600 font-bold hover:underline">
-                                Add Day 1
-                            </button>
+                            <Link to={`/trip/${trip.id}/edit`} className="text-indigo-600 font-bold hover:underline">
+                                Edit Trip
+                            </Link>
                         )}
                     </div>
                 )}
+
+                {/* Comments */}
+                <div ref={commentSectionRef}>
+                    <CommentSection tripId={id} />
+                </div>
             </div>
 
-            {/* Stop Form Modal */}
-            {isOwner && (activeDayId || editingStop) && (
-                <StopForm
-                    onClose={() => { setActiveDayId(null); setEditingStop(null); }}
-                    onSave={editingStop ? handleEditStop : handleAddStop}
-                    initialData={editingStop ? editingStop.stop : null}
-                />
-            )}
+
         </Layout>
     );
 };

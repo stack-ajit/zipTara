@@ -52,7 +52,7 @@ const Footer = () => {
                 <div>
                     <h3 className="text-white font-bold mb-2">Follow Us</h3>
                     <div className="flex space-x-3 mb-2">
-                        <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="bg-slate-800 p-2 rounded-full hover:bg-pink-600 hover:text-white transition-colors">
+                        <a href="https://www.instagram.com/_ziptara/" target="_blank" rel="noopener noreferrer" className="bg-slate-800 p-2 rounded-full hover:bg-pink-600 hover:text-white transition-colors">
                             <Instagram className="w-4 h-4" />
                         </a>
                         <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="bg-slate-800 p-2 rounded-full hover:bg-blue-400 hover:text-white transition-colors">
@@ -63,7 +63,7 @@ const Footer = () => {
             </div>
 
             <div className="max-w-7xl mx-auto mt-6 pt-4 border-t border-slate-800 text-center text-xs text-slate-600">
-                <p>&copy; {new Date().getFullYear()} zipTara. Built with ❤️ for explorers.</p>
+                <p>&copy; {new Date().getFullYear()} zipTara</p>
                 <div className="mt-2 space-x-4">
                     <a href="#" className="hover:text-slate-400">Privacy Policy</a>
                     <a href="#" className="hover:text-slate-400">Terms of Service</a>

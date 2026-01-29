@@ -46,6 +46,10 @@ const TripSchema = new mongoose.Schema({
         default: false
     },
     tags: [String],
+    stars: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+    }],
     days: [DaySchema],
     isSaved: {
         type: Boolean,

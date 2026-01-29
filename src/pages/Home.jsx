@@ -4,6 +4,7 @@ import Layout from '../components/Layout';
 import { useTrips } from '../store/useStore';
 import TripCard from '../components/TripCard';
 import { Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
 
 const Home = () => {
     const { trips, publicTrips, user, tripsLoading } = useTrips();
@@ -25,12 +26,15 @@ const Home = () => {
     };
 
     // Logic for "Get Inspired" - Now uses real public trips from other users
-    const displayPublicTrips = publicTrips.filter(t =>
-    (t.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        t.location?.toLowerCase().includes(searchTerm.toLowerCase()))
-    );
+    const displayPublicTrips = publicTrips.filter(t => {
+        // Exclude my own trips
+        const tripUserId = (typeof t.user === 'object' && t.user !== null) ? t.user._id : t.user;
+        const isOwner = user && (tripUserId === user._id || tripUserId === user.id);
+        if (isOwner) return false;
 
-    const tags = ["#Beach", "#Mountain", "#Europe", "#Asia", "Photography"];
+        return (t.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            t.location?.toLowerCase().includes(searchTerm.toLowerCase()));
+    });
 
     return (
         <Layout>
@@ -61,18 +65,16 @@ const Home = () => {
                                     <div className="absolute right-2 top-2 bottom-2 bg-transparent text-gray-400 w-12 flex items-center justify-center">
                                         <Search className="w-5 h-5" />
                                     </div>
+
                                 </div>
 
+                                {/* Tags */}
+
                             </div>
 
-                            {/* Tags */}
-                            <div className="flex flex-wrap gap-2 mt-4">
-                                {tags.map(tag => (
-                                    <button key={tag} className="px-4 py-2 bg-white/60 backdrop-blur-sm border border-white/50 rounded-full text-sm font-medium text-slate-600 hover:bg-white hover:text-blue-600 transition-all shadow-sm">
-                                        {tag}
-                                    </button>
-                                ))}
-                            </div>
+                            {/* Weather/Stats Widget */}
+
+
                         </div>
 
                         {/* Weather/Stats Widget */}
@@ -147,7 +149,8 @@ const Home = () => {
                                     <p className="text-gray-500">No public trips found for inspiration yet.</p>
                                 </div>
                             ) : (
-                                <div className="flex space-x-6 overflow-x-auto pb-6 snap-x no-scrollbar">
+                                <div className="flex space-x-6 overflow-x-auto pb-6 snap-x no-scrollbar scroll-smooth">
+                                    {/* Duplicate lists for seamless feel if we had infinite scroll, strictly we just list them here for now */}
                                     {displayPublicTrips.map((trip) => (
                                         <div key={trip.id} className="min-w-[280px] snap-center">
                                             <TripCard trip={trip} />

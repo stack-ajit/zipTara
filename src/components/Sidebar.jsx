@@ -1,14 +1,15 @@
-import { Home, Map, Bookmark, LogOut, MapPin, Info } from 'lucide-react';
+import { Home, Map, Bookmark, LogOut, MapPin, Info, User } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 import { useTrips } from '../store/useStore';
 
 const Sidebar = () => {
-    const { logout } = useTrips();
+    const { logout, user } = useTrips();
 
     const navItems = [
         { icon: Home, label: 'Home', path: '/' },
-        { icon: Map, label: 'My Trips', path: '/my-trips' },
         { icon: Bookmark, label: 'Saved', path: '/saved' },
+        { icon: User, label: 'Settings', path: '/settings' },
+        { icon: User, label: 'My Profile', path: '/profile' },
         { icon: Info, label: 'About Us', path: '/about' },
     ];
 

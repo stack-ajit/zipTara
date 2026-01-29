@@ -32,10 +32,28 @@ const extractPublicId = (url) => {
 // Get all trips for user
 exports.getTrips = async (req, res) => {
     try {
+        const Comment = require('../models/Comment');
         const trips = await Trip.find({ user: req.user.id })
             .select('-days') // Exclude days/stops/photos for list view
-            .sort({ date: -1 });
-        res.json(trips);
+            .sort({ date: -1 })
+            .lean();
+
+        // Add comment counts
+        const tripIds = trips.map(t => t._id);
+        const commentCounts = await Comment.aggregate([
+            { $match: { trip: { $in: tripIds } } },
+            { $group: { _id: '$trip', count: { $sum: 1 } } }
+        ]);
+
+        const countMap = {};
+        commentCounts.forEach(c => { countMap[c._id.toString()] = c.count; });
+
+        const tripsWithCounts = trips.map(t => ({
+            ...t,
+            commentsCount: countMap[t._id.toString()] || 0
+        }));
+
+        res.json(tripsWithCounts);
     } catch (err) {
         console.error(err.message);
         res.status(500).send('Server Error');
@@ -45,14 +63,29 @@ exports.getTrips = async (req, res) => {
 // Get all public trips
 exports.getPublicTrips = async (req, res) => {
     try {
+        const Comment = require('../models/Comment');
         const trips = await Trip.find({ isPublic: true })
             .select('-days') // Exclude heavy data
             .sort({ createdAt: -1 })
-            .populate('user', 'username fullName');
+            .populate('user', 'username fullName')
+            .lean();
 
-        // console.log(JSON.stringify(trips, null, 2)); // Uncomment for deep debug
+        // Add comment counts
+        const tripIds = trips.map(t => t._id);
+        const commentCounts = await Comment.aggregate([
+            { $match: { trip: { $in: tripIds } } },
+            { $group: { _id: '$trip', count: { $sum: 1 } } }
+        ]);
 
-        res.json(trips);
+        const countMap = {};
+        commentCounts.forEach(c => { countMap[c._id.toString()] = c.count; });
+
+        const tripsWithCounts = trips.map(t => ({
+            ...t,
+            commentsCount: countMap[t._id.toString()] || 0
+        }));
+
+        res.json(tripsWithCounts);
     } catch (err) {
         console.error(err.message);
         res.status(500).send('Server Error');
@@ -95,13 +128,46 @@ exports.toggleSaveTrip = async (req, res) => {
     }
 };
 
+// Toggle Star Trip
+exports.toggleStarTrip = async (req, res) => {
+    try {
+        const trip = await Trip.findById(req.params.id);
+        if (!trip) {
+            return res.status(404).json({ msg: 'Trip not found' });
+        }
+
+        const userId = req.user.id;
+
+        // Ensure taras array exists (migration safety)
+        if (!trip.stars) trip.stars = [];
+
+        const isStarred = trip.stars.some(id => id.toString() === userId);
+
+        if (isStarred) {
+            // Remove tara
+            trip.stars = trip.stars.filter(id => id.toString() !== userId);
+        } else {
+            // Add tara
+            trip.stars.push(userId);
+        }
+
+        await trip.save();
+        res.json(trip.stars);
+    } catch (err) {
+        console.error("Toggle Star Error:", err.message);
+        res.status(500).send('Server Error');
+    }
+};
+
 // Get single trip
 exports.getTrip = async (req, res) => {
     try {
-        const trip = await Trip.findById(req.params.id);
+        const trip = await Trip.findById(req.params.id).populate('user', 'username fullName');
         if (!trip) return res.status(404).json({ msg: 'Trip not found' });
         // Make sure user owns trip or it is public
-        if (trip.user.toString() !== req.user.id && !trip.isPublic) {
+        // Handle populated user object (trip.user._id)
+        const tripUserId = trip.user._id ? trip.user._id.toString() : trip.user.toString();
+        if (tripUserId !== req.user.id && !trip.isPublic) {
             return res.status(401).json({ msg: 'Not authorized' });
         }
         res.json(trip);
@@ -211,6 +277,32 @@ exports.updateTrip = async (req, res) => {
         }
 
         tripData.tags = generateAutoTags(tripData);
+
+        // Remove immutable fields to prevent DB errors
+        delete tripData._id;
+        delete tripData.id;
+        delete tripData.user;
+        delete tripData.createdAt;
+        delete tripData.updatedAt;
+        delete tripData.__v;
+
+        // Recursively remove _id from subdocuments (days and stops)
+        if (tripData.days && Array.isArray(tripData.days)) {
+            tripData.days.forEach(day => {
+                delete day._id;
+                if (day.stops && Array.isArray(day.stops)) {
+                    day.stops.forEach(stop => {
+                        delete stop._id;
+                    });
+                }
+            });
+        }
+
+        // FAILSAFE: If cover is an object (due to upstream bug), delete it so Mongoose doesn't crash
+        if (tripData.cover && typeof tripData.cover !== 'string') {
+            console.warn("Detected invalid cover format (Object), removing it:", tripData.cover);
+            delete tripData.cover;
+        }
 
         // Handle image upload (New Cover)
         if (req.file) {

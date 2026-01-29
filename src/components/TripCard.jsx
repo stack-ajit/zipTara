@@ -1,12 +1,12 @@
 import { useNavigate } from 'react-router-dom';
-import { Calendar, MapPin, MoreVertical, Trash2, Edit, Share2, Bookmark } from 'lucide-react';
+import { Calendar, MapPin, MoreVertical, Trash2, Edit, Share2, Bookmark, Star, MessageCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useState, useRef, useEffect } from 'react';
 import { useTrips } from '../store/useStore';
 
 const TripCard = ({ trip }) => {
     const navigate = useNavigate();
-    const { deleteTrip, user, toggleSaved } = useTrips();
+    const { deleteTrip, user, toggleSaved, toggleStar } = useTrips();
     const [showMenu, setShowMenu] = useState(false);
     const menuRef = useRef(null);
 
@@ -64,6 +64,15 @@ const TripCard = ({ trip }) => {
         navigate(`/trip/${trip.id || trip._id}`);
     };
 
+    // Check if current user has starred the trip
+    const isStarred = trip.stars?.includes(currentUserId);
+
+    const handleToggleStar = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        toggleStar(trip.id || trip._id);
+    };
+
     return (
         <motion.div
             initial={{ opacity: 0, y: 10 }}
@@ -91,16 +100,23 @@ const TripCard = ({ trip }) => {
 
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60" />
 
-                    {/* Bookmark Button */}
-                    <button
-                        onClick={handleToggleSave}
-                        className={`absolute top-3 right-3 p-2 rounded-full backdrop-blur-md transition-all z-10 ${isSaved
-                            ? 'bg-yellow-400 text-white shadow-lg scale-110'
-                            : 'bg-white/20 text-white hover:bg-white/40'
-                            }`}
-                    >
-                        <Bookmark className={`w-4 h-4 ${isSaved ? 'fill-current' : ''}`} />
-                    </button>
+                    {/* Action Buttons Container */}
+                    <div className="absolute top-3 right-3 flex gap-2 z-10">
+                        {/* Star (Tara) Button */}
+
+
+                        {/* Bookmark Button */}
+                        <button
+                            onClick={handleToggleSave}
+                            className={`p-2 rounded-full backdrop-blur-md transition-all ${isSaved
+                                ? 'bg-blue-500 text-white shadow-lg scale-110'
+                                : 'bg-white/20 text-white hover:bg-white/40'
+                                }`}
+                            title={isSaved ? "Unsave Trip" : "Save Trip"}
+                        >
+                            <Bookmark className={`w-4 h-4 ${isSaved ? 'fill-current' : ''}`} />
+                        </button>
+                    </div>
 
                     <div className="absolute bottom-3 left-3 right-3 text-white">
                         <div className="flex items-center text-xs font-medium opacity-90 mb-1">
@@ -127,34 +143,68 @@ const TripCard = ({ trip }) => {
                             )}
                         </div>
 
-                        {/* Owner Menu */}
-                        {isOwner && (
-                            <div className="relative ml-2" ref={menuRef} onClick={e => e.stopPropagation()}>
-                                <button
-                                    onClick={(e) => { e.stopPropagation(); setShowMenu(!showMenu); }}
-                                    className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors"
-                                >
-                                    <MoreVertical className="w-4 h-4" />
-                                </button>
+                        <div className="flex items-center gap-2">
+                            {/* Star (Tara) Button */}
+                            <button
+                                onClick={handleToggleStar}
+                                className={`p-1.5 rounded-full transition-all ${isStarred
+                                    ? 'text-yellow-400 bg-yellow-50'
+                                    : 'text-gray-300 hover:text-gray-400'
+                                    }`}
+                                title={isStarred ? "Remove Tara" : "Give a Tara"}
+                            >
+                                <Star className={`w-5 h-5 ${isStarred ? 'fill-current' : ''}`} />
+                            </button>
+                            <span className="text-xs font-medium text-gray-400">
+                                {trip.stars?.length || 0}
+                            </span>
 
-                                {showMenu && (
-                                    <div className="absolute right-0 mt-1 w-32 bg-white rounded-xl shadow-xl border border-gray-100 py-1 z-20 overflow-hidden animate-in fade-in zoom-in-95 duration-100">
-                                        <button
-                                            onClick={handleEdit}
-                                            className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center"
-                                        >
-                                            <Edit className="w-4 h-4 mr-2 text-indigo-500" /> Edit
-                                        </button>
-                                        <button
-                                            onClick={handleDelete}
-                                            className="w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center"
-                                        >
-                                            <Trash2 className="w-4 h-4 mr-2" /> Delete
-                                        </button>
-                                    </div>
-                                )}
-                            </div>
-                        )}
+                            {/* Comment Button */}
+                            <button
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    navigate(`/trip/${trip.id || trip._id}#comments`);
+                                }}
+                                className="p-1.5 rounded-full transition-all text-gray-300 hover:text-blue-500 hover:bg-blue-50"
+                                title="View Comments"
+                            >
+                                <MessageCircle className="w-5 h-5" />
+                            </button>
+                            <span className="text-xs font-medium text-gray-400">
+                                {trip.commentsCount || 0}
+                            </span>
+
+                            {/* Owner Menu */}
+                            {isOwner && (
+                                <div className="relative ml-2" ref={menuRef} onClick={e => e.stopPropagation()}>
+                                    <button
+                                        onClick={(e) => { e.stopPropagation(); setShowMenu(!showMenu); }}
+                                        className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors"
+                                    >
+                                        <MoreVertical className="w-4 h-4" />
+                                    </button>
+
+                                    {showMenu && (
+                                        <div className="absolute right-0 mt-1 w-32 bg-white rounded-xl shadow-xl border border-gray-100 py-1 z-20 overflow-hidden animate-in fade-in zoom-in-95 duration-100">
+                                            <button
+                                                onClick={handleEdit}
+                                                className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center"
+                                            >
+                                                <Edit className="w-4 h-4 mr-2 text-indigo-500" /> Edit
+                                            </button>
+                                            <button
+                                                onClick={handleDelete}
+                                                className="w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center"
+                                            >
+                                                <Trash2 className="w-4 h-4 mr-2" /> Delete
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+
                     </div>
 
                     <div className="mt-auto pt-3 border-t border-gray-50 flex items-center justify-between text-xs text-gray-400">
@@ -164,7 +214,7 @@ const TripCard = ({ trip }) => {
                                 : Math.max(1, Math.ceil((new Date(trip.endDate) - new Date(trip.startDate)) / (1000 * 60 * 60 * 24)) + 1)
                             } days
                         </span>
-                        {trip.isPublic && <span className="flex items-center text-indigo-400"><Share2 className="w-3 h-3 mr-1" /> Public</span>}
+
                     </div>
                 </div>
             </div>

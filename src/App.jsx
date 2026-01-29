@@ -10,6 +10,8 @@ import ProtectedRoute from './components/ProtectedRoute';
 import { TripProvider } from './store/useStore';
 import ProfileSetupPage from './pages/ProfileSetupPage';
 import AboutUs from './pages/AboutUs';
+import Settings from './pages/Settings';
+import MyProfile from './pages/MyProfile';
 
 function App() {
   return (
@@ -30,9 +32,9 @@ function App() {
             </ProtectedRoute>
           } />
 
-          <Route path="/my-trips" element={
+          <Route path="/profile" element={
             <ProtectedRoute>
-              <MyTrips />
+              <MyProfile />
             </ProtectedRoute>
           } />
 
@@ -67,6 +69,13 @@ function App() {
           } />
 
           <Route path="/public/:id" element={<PublicTrip />} />
+
+
+          <Route path="/settings" element={
+            <ProtectedRoute>
+              <Settings />
+            </ProtectedRoute>
+          } />
         </Routes>
       </Router>
     </TripProvider>

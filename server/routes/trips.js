@@ -19,6 +19,11 @@ router.get('/public', auth, tripController.getPublicTrips);
 // @access  Private
 router.post('/:id/save', auth, tripController.toggleSaveTrip);
 
+// @route   POST api/trips/:id/star
+// @desc    Toggle star (Tara) trip
+// @access  Private
+router.post('/:id/star', auth, tripController.toggleStarTrip);
+
 // @route   GET api/trips/:id
 // @desc    Get single trip
 // @access  Private (Public if shared)
@@ -38,5 +43,28 @@ router.put('/:id', auth, upload.single('cover'), tripController.updateTrip);
 // @desc    Delete trip
 // @access  Private
 router.delete('/:id', auth, tripController.deleteTrip);
+
+// --- Comment Routes ---
+const commentController = require('../controllers/commentController');
+
+// @route   GET api/trips/:id/comments
+// @desc    Get all comments for a trip
+// @access  Private
+router.get('/:id/comments', auth, commentController.getComments);
+
+// @route   POST api/trips/:id/comments
+// @desc    Add a comment to a trip
+// @access  Private
+router.post('/:id/comments', auth, commentController.addComment);
+
+// @route   POST api/trips/:id/comments/:commentId/reply
+// @desc    Reply to a comment
+// @access  Private
+router.post('/:id/comments/:commentId/reply', auth, commentController.replyToComment);
+
+// @route   DELETE api/trips/:id/comments/:commentId
+// @desc    Delete a comment
+// @access  Private
+router.delete('/:id/comments/:commentId', auth, commentController.deleteComment);
 
 module.exports = router;

@@ -38,7 +38,7 @@ const SavedTrips = () => {
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                        {savedTrips.map((trip) => (
+                        {uniqueSavedTrips.map((trip) => (
                             <TripCard key={trip.id} trip={trip} />
                         ))}
                     </div>

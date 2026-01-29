@@ -5,7 +5,7 @@ const TripContext = createContext();
 
 export const TripProvider = ({ children }) => {
     const [trips, setTrips] = useState([]);
-    const [publicTrips, setPublicTrips] = useState([]); // New state for public trips
+    const [publicTrips, setPublicTrips] = useState([]); // Restored for Home page
     const [user, setUser] = useState(null);
     const [token, setToken] = useState(localStorage.getItem('token'));
     const [loading, setLoading] = useState(true); // Auth loading
@@ -91,6 +91,16 @@ export const TripProvider = ({ children }) => {
         }
     };
 
+    const changePassword = async (currentPassword, newPassword) => {
+        try {
+            await api.put('/auth/password', { currentPassword, newPassword });
+            return { success: true };
+        } catch (err) {
+            console.error("Change Password Error:", err);
+            return { success: false, msg: err.response?.data?.msg || 'Failed to update password' };
+        }
+    };
+
     const logout = () => {
         localStorage.removeItem('token');
         setToken(null);
@@ -117,6 +127,8 @@ export const TripProvider = ({ children }) => {
             console.error("Fetch Public Trips Error:", err);
         }
     };
+
+
 
     // Helper: Base64 to Blob
     const dataURLtoBlob = (dataURL) => {
@@ -163,7 +175,7 @@ export const TripProvider = ({ children }) => {
                 });
 
                 requestData = formData;
-                headers['Content-Type'] = 'multipart/form-data';
+                // headers['Content-Type'] = 'multipart/form-data'; // Let axios set this with boundary
             }
 
             const res = await api.post('/trips', requestData, { headers });
@@ -201,7 +213,7 @@ export const TripProvider = ({ children }) => {
                 });
 
                 requestData = formData;
-                headers['Content-Type'] = 'multipart/form-data';
+                // headers['Content-Type'] = 'multipart/form-data'; // Let axios set this with boundary
             }
 
             const res = await api.put(`/trips/${updatedTrip._id || updatedTrip.id}`, requestData, { headers });
@@ -256,6 +268,43 @@ export const TripProvider = ({ children }) => {
         }
     };
 
+    const toggleStar = async (id) => {
+        if (!user) return;
+
+        // Optimistic Update
+        const targetTrip = getTrip(id);
+        if (!targetTrip) return;
+
+        // Handle both ID string or object formats just in case
+        const userId = user._id || user.id;
+
+        // Ensure stars exists
+        const currentStars = targetTrip.stars || [];
+        const isStarred = currentStars.some(s => (typeof s === 'object' ? s._id : s) === userId);
+
+        let newStars;
+        if (isStarred) {
+            newStars = currentStars.filter(s => (typeof s === 'object' ? s._id : s) !== userId);
+        } else {
+            newStars = [...currentStars, userId];
+        }
+
+        // Update local state (trips and publicTrips)
+        const updateList = (list) => list.map(t =>
+            (t.id === id || t._id === id) ? { ...t, stars: newStars } : t
+        );
+
+        setTrips(prev => updateList(prev));
+        setPublicTrips(prev => updateList(prev));
+
+        try {
+            await api.post(`/trips/${id}/star`);
+        } catch (err) {
+            console.error("Toggle Star Error:", err);
+            // Revert on error could be implemented here by refetching
+        }
+    };
+
     const getTrip = (id) => {
         return trips.find(t => t.id === id || t._id === id) ||
             publicTrips.find(t => t.id === id || t._id === id);
@@ -263,7 +312,7 @@ export const TripProvider = ({ children }) => {
 
     const fetchTrip = async (id) => {
         try {
-            setLoading(true);
+            // setLoading(true); // Don't trigger global auth loader
             const res = await api.get(`/trips/${id}`);
             const fullTrip = { ...res.data, id: res.data._id };
 
@@ -274,19 +323,11 @@ export const TripProvider = ({ children }) => {
                     : [...prev]; // Don't add to list if not there, or do? Maybe just return it.
                 return parts;
             });
-            // Also update public trips if it's there
-            setPublicTrips(prev => {
-                return prev.some(t => t.id === fullTrip.id)
-                    ? prev.map(t => t.id === fullTrip.id ? fullTrip : t)
-                    : prev;
-            });
 
             return fullTrip;
         } catch (err) {
             console.error("Fetch Single Trip Error:", err);
             return null;
-        } finally {
-            setLoading(false);
         }
     };
 
@@ -301,13 +342,15 @@ export const TripProvider = ({ children }) => {
             login,
             register,
             updateProfile,
+            changePassword,
             logout,
             addTrip,
             deleteTrip,
             updateTrip,
             getTrip,
             fetchTrip,
-            toggleSaved
+            toggleSaved,
+            toggleStar
         }}>
             {children}
         </TripContext.Provider>

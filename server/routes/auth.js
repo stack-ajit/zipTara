@@ -22,5 +22,9 @@ router.get('/me', auth, authController.getMe);
 // @desc    Update user profile
 // @access  Private
 router.put('/profile', auth, authController.updateProfile);
+// @route   PUT api/auth/password
+// @desc    Change user password
+// @access  Private
+router.put('/password', auth, authController.changePassword);
 
 module.exports = router;

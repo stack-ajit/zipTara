@@ -24,9 +24,14 @@ const DayCard = ({ day, index, onDeleteDay, onAddStop, onDeleteStop, onEditStop,
                     <div className="bg-white px-3 py-1 rounded-lg font-bold text-gray-900 border border-gray-200 shadow-sm text-sm">
                         Day {index + 1}
                     </div>
-                    <span className="font-semibold text-gray-600 text-sm">
-                        {new Date(day.date).toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric' })}
-                    </span>
+                    <div>
+                        {day.title && (
+                            <div className="font-bold text-gray-900 text-base">{day.title}</div>
+                        )}
+                        <div className="font-medium text-gray-500 text-sm">
+                            {new Date(day.date).toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric' })}
+                        </div>
+                    </div>
                 </button>
 
                 {!readOnly && (

@@ -17,6 +17,7 @@ app.use(cors({
 app.use(express.json({ limit: '50mb' })); // Increased limit for base64 images (temporary)
 
 // Database Connection
+mongoose.set('strictQuery', false); // Suppress deprecation warning
 mongoose.connect(process.env.MONGO_URI)
     .then(() => console.log('MongoDB Connected Successfully'))
     .catch(err => {

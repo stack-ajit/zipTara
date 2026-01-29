@@ -1,4 +1,4 @@
-import { Plus } from 'lucide-react';
+import { Plus, Globe, Lock } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useState } from 'react';
 import Layout from '../components/Layout';
@@ -7,10 +7,14 @@ import TripCard from '../components/TripCard';
 
 const MyTrips = () => {
     const { trips, tripsLoading: loading } = useTrips();
-    const [publicOnly, setPublicOnly] = useState(false);
+    const [filter, setFilter] = useState('all'); // 'all', 'public', 'private'
 
-    // Filter by publicOnly if toggle is on
-    const myTrips = publicOnly ? trips.filter(t => t.isPublic) : trips;
+    // Filter trips based on selected filter
+    const myTrips = filter === 'all'
+        ? trips
+        : filter === 'public'
+            ? trips.filter(t => t.isPublic)
+            : trips.filter(t => !t.isPublic);
 
     return (
         <Layout>
@@ -18,19 +22,28 @@ const MyTrips = () => {
                 <div className="flex items-center justify-between">
                     <h1 className="text-3xl font-bold text-gray-900">My Trips</h1>
                     <div className="flex items-center gap-4">
-                        <div className="hidden sm:flex bg-white rounded-xl p-1.5 shadow-sm border border-gray-100 items-center gap-3 pr-3 pl-3">
-                            <div className="text-xs font-semibold text-gray-500 leading-tight text-right">
-                                Public<br />only
-                            </div>
-                            <label className="relative inline-flex items-center cursor-pointer">
-                                <input
-                                    type="checkbox"
-                                    checked={publicOnly}
-                                    onChange={() => setPublicOnly(!publicOnly)}
-                                    className="sr-only peer"
-                                />
-                                <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-slate-900"></div>
-                            </label>
+                        {/* Public/Private Toggle */}
+                        <div className="hidden sm:flex bg-white rounded-xl p-1 shadow-sm border border-gray-100">
+                            <button
+                                onClick={() => setFilter('public')}
+                                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${filter === 'public'
+                                        ? 'bg-slate-900 text-white shadow-sm'
+                                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                                    }`}
+                            >
+                                <Globe className="w-4 h-4" />
+                                <span>Public</span>
+                            </button>
+                            <button
+                                onClick={() => setFilter('private')}
+                                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${filter === 'private'
+                                        ? 'bg-slate-900 text-white shadow-sm'
+                                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                                    }`}
+                            >
+                                <Lock className="w-4 h-4" />
+                                <span>Private</span>
+                            </button>
                         </div>
                         <Link
                             to="/trip/new"

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTrips } from '../store/useStore';
-import { ChevronLeft, ChevronRight, Upload, Trash2, Plus, Calendar, DollarSign, Image as ImageIcon, Check, X } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Upload, Trash2, Plus, Calendar, DollarSign, Image as ImageIcon, Check, X, MapPin } from 'lucide-react';
 
 import LocationInput from '../components/LocationInput';
 import api from '../services/api';
@@ -65,7 +65,11 @@ const TripEditor = () => {
         } else {
             const t = getTrip(id);
             if (t) {
-                setTrip(JSON.parse(JSON.stringify(t))); // Deep copy to avoid direct mutation
+                const tripData = JSON.parse(JSON.stringify(t));
+                // Ensure arrays exist
+                if (!tripData.days) tripData.days = [];
+                if (!tripData.tags) tripData.tags = [];
+                setTrip(tripData);
                 setLoading(false);
             } else {
                 navigate('/');
@@ -76,12 +80,20 @@ const TripEditor = () => {
     const [isSaving, setIsSaving] = useState(false);
 
     const handleSave = async () => {
+        console.log("Saving trip...", trip);
+        console.log("Cover value:", trip.cover, "Type:", typeof trip.cover);
+
         setIsSaving(true);
         try {
             let savedTrip;
             // Clean up stops to ensure no weird data
             const cleanedTrip = {
                 ...trip,
+                // Ensure cover is a string (handle potential object bug)
+                cover: (typeof trip.cover === 'string') ? trip.cover : '',
+                // Ensure location is a string
+                location: (typeof trip.location === 'string') ? trip.location : '',
+
                 days: trip.days.map(d => ({
                     ...d,
                     stops: d.stops.map(s => ({
@@ -394,7 +406,7 @@ const TripEditor = () => {
                         <p className="text-gray-400 text-sm mb-6">Add days and fill in stops, timings, tips, and photos for each day.</p>
 
                         <div className="space-y-8">
-                            {trip.days.map((day, dIndex) => (
+                            {trip.days?.map((day, dIndex) => (
                                 <div key={day.id} className="border border-gray-200 rounded-xl p-4 sm:p-6 bg-gray-50/30">
                                     {/* Day Header */}
                                     <div className="flex justify-between items-start mb-4">
@@ -555,7 +567,7 @@ const TripEditor = () => {
 
                         <div className="space-y-3 mb-6">
                             <div className="flex items-start text-sm text-gray-500">
-                                <span className="w-6"><Plus className="w-4 h-4 rotate-45" /></span> {/* Using plus as generic marker/icon */}
+                                <span className="w-6"><MapPin className="w-4 h-4" /></span> {/* Using plus as generic marker/icon */}
                                 <span className="font-medium text-gray-900">{trip.location || 'No location'}</span>
                             </div>
                             <div className="flex items-start text-sm text-gray-500">
@@ -568,7 +580,7 @@ const TripEditor = () => {
                             </div>
                             <div className="flex items-start text-sm text-gray-500">
                                 <span className="w-6"><Calendar className="w-4 h-4" /></span>
-                                <span>{trip.days.length} day(s)</span>
+                                <span>{trip.days?.length || 0} day(s)</span>
                             </div>
                         </div>
 
