@@ -207,9 +207,9 @@ const Home = () => {
                                         </button>
 
                                         {/* Scroll Container */}
-                                        <div id="trips-scroll-container" className="flex-1 flex space-x-6 overflow-x-auto pb-6 snap-x sleek-scrollbar scroll-smooth px-1">
+                                        <div id="trips-scroll-container" className="flex-1 flex flex-col space-y-6 md:flex-row md:space-y-0 md:space-x-6 md:overflow-x-auto pb-6 snap-y md:snap-x sleek-scrollbar scroll-smooth px-1">
                                             {displayPublicTrips.map((trip) => (
-                                                <div key={trip.id} className="min-w-[280px] snap-center">
+                                                <div key={trip.id} className="w-full md:min-w-[280px] md:w-auto snap-center">
                                                     <TripCard trip={trip} />
                                                 </div>
                                             ))}
