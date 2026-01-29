@@ -104,7 +104,7 @@ const Home = () => {
                             initial={{ opacity: 0, scale: 0.9 }}
                             animate={{ opacity: 1, scale: 1 }}
                             transition={{ duration: 0.5, delay: 0.3 }}
-                            className="hidden lg:block bg-white/80 backdrop-blur-md p-5 rounded-2xl shadow-lg border border-white/50 min-w-[220px]"
+                            className="bg-white/80 backdrop-blur-md p-5 rounded-2xl shadow-lg border border-white/50 min-w-[220px]"
                         >
                             <div className="flex items-center space-x-3">
                                 <motion.div

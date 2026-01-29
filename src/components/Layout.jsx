@@ -11,10 +11,10 @@ const Layout = ({ children }) => {
             {/* Mobile Hamburger Button */}
             <button
                 onClick={() => setSidebarOpen(!sidebarOpen)}
-                className="lg:hidden fixed top-4 left-4 z-50 bg-slate-900 text-white p-2.5 rounded-xl shadow-lg hover:bg-slate-800 transition-colors"
+                className="lg:hidden fixed top-4 left-2 z-50 text-slate-900 bg-white/50 backdrop-blur-sm p-2 rounded-lg shadow-sm hover:bg-white/80 transition-all border border-gray-200"
                 aria-label="Toggle sidebar"
             >
-                {sidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+                {sidebarOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
 
             {/* Backdrop for mobile */}
