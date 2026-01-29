@@ -118,12 +118,19 @@ const AuthPage = () => {
             {/* Immersive Background */}
             <div className="absolute inset-0 z-0">
                 <motion.img
-                    initial={{ scale: 1.15 }}
+                    width="100%"
+                    height="100%"
+                    initial={{ scale: 1.2 }}
                     animate={{ scale: 1 }}
-                    transition={{ duration: 100, ease: "linear" }}
+                    transition={{
+                        duration: 20,
+                        ease: "linear",
+                        repeat: Infinity,
+                        repeatType: "reverse"
+                    }}
                     src="https://images.unsplash.com/photo-1519681393784-d120267933ba?q=80&w=2070&auto=format&fit=crop"
                     alt="Background"
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover opacity-60"
                 />
                 <div className="absolute inset-0 bg-black/50" />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/50" />
