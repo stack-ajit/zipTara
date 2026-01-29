@@ -123,7 +123,7 @@ const AuthPage = () => {
                     initial={{ scale: 1.2 }}
                     animate={{ scale: 1 }}
                     transition={{
-                        duration: 20,
+                        duration: 8,
                         ease: "linear",
                         repeat: Infinity,
                         repeatType: "reverse"

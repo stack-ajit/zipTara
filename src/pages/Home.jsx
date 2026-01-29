@@ -1,4 +1,4 @@
-import { Search, MapPin, Sparkles } from 'lucide-react';
+import { Search, MapPin, Sparkles, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useState, useMemo, useEffect } from 'react';
 import Layout from '../components/Layout';
 import { useTrips } from '../store/useStore';
@@ -195,13 +195,35 @@ const Home = () => {
                                     <p className="text-gray-500">No public trips found for inspiration yet.</p>
                                 </div>
                             ) : (
-                                <div className="flex space-x-6 overflow-x-auto pb-6 snap-x no-scrollbar scroll-smooth">
-                                    {/* Duplicate lists for seamless feel if we had infinite scroll, strictly we just list them here for now */}
-                                    {displayPublicTrips.map((trip) => (
-                                        <div key={trip.id} className="min-w-[280px] snap-center">
-                                            <TripCard trip={trip} />
+                                <div className="relative group/scroll px-1">
+                                    <div className="flex items-end gap-2">
+                                        {/* Left Button */}
+                                        <button
+                                            onClick={() => document.getElementById('trips-scroll-container').scrollBy({ left: -300, behavior: 'smooth' })}
+                                            className="mb-6 p-2 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 transition-colors hidden md:block"
+                                            aria-label="Scroll left"
+                                        >
+                                            <ChevronLeft className="w-5 h-5" />
+                                        </button>
+
+                                        {/* Scroll Container */}
+                                        <div id="trips-scroll-container" className="flex-1 flex space-x-6 overflow-x-auto pb-6 snap-x sleek-scrollbar scroll-smooth px-1">
+                                            {displayPublicTrips.map((trip) => (
+                                                <div key={trip.id} className="min-w-[280px] snap-center">
+                                                    <TripCard trip={trip} />
+                                                </div>
+                                            ))}
                                         </div>
-                                    ))}
+
+                                        {/* Right Button */}
+                                        <button
+                                            onClick={() => document.getElementById('trips-scroll-container').scrollBy({ left: 300, behavior: 'smooth' })}
+                                            className="mb-6 p-2 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 transition-colors hidden md:block"
+                                            aria-label="Scroll right"
+                                        >
+                                            <ChevronRight className="w-5 h-5" />
+                                        </button>
+                                    </div>
                                 </div>
                             )}
                         </div>

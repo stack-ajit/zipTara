@@ -149,6 +149,19 @@ exports.toggleStarTrip = async (req, res) => {
         } else {
             // Add tara
             trip.stars.push(userId);
+
+            // Create notification for trip owner (if not starring own trip)
+            const tripOwnerId = trip.user.toString();
+
+            if (tripOwnerId !== userId) {
+                const Notification = require('../models/Notification');
+                await Notification.create({
+                    recipient: tripOwnerId,
+                    sender: userId,
+                    type: 'star',
+                    trip: trip._id
+                });
+            }
         }
 
         await trip.save();

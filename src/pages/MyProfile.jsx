@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Layout from '../components/Layout';
 import { useTrips } from '../store/useStore';
 import TripCard from '../components/TripCard';
@@ -6,9 +6,14 @@ import { User, Mail, Calendar, MapPin, Edit2, Globe, Lock } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const MyProfile = () => {
-    const { user, trips, tripsLoading } = useTrips();
+    const { user, trips, tripsLoading, fetchTrips } = useTrips();
     const [activeTab, setActiveTab] = useState('trips'); // 'trips' or 'details'
     const [showPrivate, setShowPrivate] = useState(false);
+
+    // Refresh trips on mount to get latest star counts
+    useEffect(() => {
+        fetchTrips();
+    }, []);
 
     // Filter trips based on toggle
     const filteredTrips = showPrivate

@@ -25,6 +25,10 @@ const UserSchema = new mongoose.Schema({
         type: Date,
         default: Date.now
     },
+    isAdmin: {
+        type: Boolean,
+        default: false
+    },
     savedTrips: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Trip'

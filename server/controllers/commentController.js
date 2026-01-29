@@ -54,6 +54,18 @@ exports.addComment = async (req, res) => {
         const populatedComment = await Comment.findById(comment._id)
             .populate('user', 'username fullName');
 
+        // Create notification for trip owner (if not commenting on own trip)
+        const tripOwnerId = trip.user.toString();
+        if (tripOwnerId !== req.user.id) {
+            const Notification = require('../models/Notification');
+            await Notification.create({
+                recipient: tripOwnerId,
+                sender: req.user.id,
+                type: 'comment',
+                trip: trip._id
+            });
+        }
+
         res.json({ ...populatedComment.toObject(), replies: [] });
     } catch (err) {
         console.error("Add Comment Error:", err.message);

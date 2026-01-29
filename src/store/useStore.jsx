@@ -11,6 +11,8 @@ export const TripProvider = ({ children }) => {
     const [loading, setLoading] = useState(true); // Auth loading
     const [tripsLoading, setTripsLoading] = useState(true); // Data loading
     const [error, setError] = useState(null);
+    const [notifications, setNotifications] = useState([]);
+    const [unreadCount, setUnreadCount] = useState(0);
 
     // Load User on Mount/Token Change
     useEffect(() => {
@@ -106,21 +108,79 @@ export const TripProvider = ({ children }) => {
         setToken(null);
         setUser(null);
         setTrips([]);
+        setNotifications([]);
+        setUnreadCount(0);
     };
 
-    // --- Trip Actions ---
+    // --- Notification Actions ---
 
-    const fetchTrips = async () => {
+    const fetchNotifications = async () => {
         try {
-            const res = await api.get('/trips');
-            setTrips(res.data.map(t => ({ ...t, id: t._id })));
+            const res = await api.get('/notifications');
+            setNotifications(res.data.notifications);
+            setUnreadCount(res.data.unreadCount);
         } catch (err) {
-            console.error("Fetch Trips Error:", err);
+            console.error('Fetch Notifications Error:', err);
         }
     };
 
-    const fetchPublicTrips = async () => {
+    const markNotificationsRead = async () => {
         try {
+            await api.patch('/notifications/read');
+            setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+            setUnreadCount(0);
+        } catch (err) {
+            console.error('Mark Notifications Read Error:', err);
+        }
+    };
+
+    // Auto-poll notifications every 60 seconds
+    // Auto-poll notifications every 5 seconds (Real-time feel)
+    useEffect(() => {
+        if (!token) return;
+        fetchNotifications();
+
+        // CRITICAL: Fetch trips immediately on mount (fixes "0 Trips" bug)
+        fetchTrips();
+        fetchPublicTrips();
+
+        const notifInterval = setInterval(fetchNotifications, 5000); // 5s for notifications
+
+        // Poll trips data every 10 seconds to update star/comment counts
+        const tripsInterval = setInterval(() => {
+            fetchTrips(true); // true = background mode (silent refresh)
+            fetchPublicTrips(true);
+        }, 10000);
+
+        return () => {
+            clearInterval(notifInterval);
+            clearInterval(tripsInterval);
+        };
+    }, [token]);
+
+    // --- Trip Actions ---
+
+    // --- Trip Actions ---
+
+    const fetchTrips = async (background = false) => {
+        try {
+            if (!background) setTripsLoading(true);
+            const res = await api.get('/trips');
+            const newTrips = res.data.map(t => ({ ...t, id: t._id }));
+
+            // Avoid state update if exact same (optimization can be added later, for now we overwrite)
+            setTrips(newTrips);
+        } catch (err) {
+            console.error("Fetch Trips Error:", err);
+        } finally {
+            if (!background) setTripsLoading(false);
+        }
+    };
+
+    const fetchPublicTrips = async (background = false) => {
+        try {
+            // Note: We don't generally have a 'publicTripsLoading' but we can add one if needed.
+            // For now, we just fetch safely.
             const res = await api.get('/trips/public');
             setPublicTrips(res.data.map(t => ({ ...t, id: t._id })));
         } catch (err) {
@@ -350,7 +410,13 @@ export const TripProvider = ({ children }) => {
             getTrip,
             fetchTrip,
             toggleSaved,
-            toggleStar
+            toggleStar,
+            notifications,
+            unreadCount,
+            fetchNotifications,
+            markNotificationsRead,
+            fetchTrips,
+            fetchPublicTrips
         }}>
             {children}
         </TripContext.Provider>

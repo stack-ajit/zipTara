@@ -1,20 +1,20 @@
-import { Home, Map, Bookmark, LogOut, MapPin, Info, User } from 'lucide-react';
+import { Home, Bookmark, LogOut, MapPin, Info, User, Sparkle } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 import { useTrips } from '../store/useStore';
 
 const Sidebar = ({ onClose }) => {
-    const { logout, user } = useTrips();
+    const { logout, user, unreadCount } = useTrips();
 
     const navItems = [
         { icon: Home, label: 'Home', path: '/' },
         { icon: Bookmark, label: 'Saved', path: '/saved' },
         { icon: User, label: 'Settings', path: '/settings' },
+        { icon: Sparkle, label: 'Notifications', path: '/notifications', badge: unreadCount },
         { icon: User, label: 'My Profile', path: '/profile' },
         { icon: Info, label: 'About Us', path: '/about' },
     ];
 
     const handleNavClick = () => {
-        // Close sidebar on mobile after navigation
         if (onClose) onClose();
     };
 
@@ -37,13 +37,20 @@ const Sidebar = ({ onClose }) => {
                         to={item.path}
                         onClick={handleNavClick}
                         className={({ isActive }) =>
-                            `flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 group ${isActive
+                            `flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 group relative ${isActive
                                 ? 'bg-white/10 text-white font-medium shadow-sm'
                                 : 'text-gray-400 hover:bg-white/5 hover:text-white'
                             }`
                         }
                     >
-                        <item.icon className="w-5 h-5" />
+                        <div className="relative">
+                            <item.icon className="w-5 h-5" />
+                            {item.badge > 0 && (
+                                <span className="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[10px] font-bold w-4 h-4 flex items-center justify-center rounded-full">
+                                    {item.badge > 9 ? '9+' : item.badge}
+                                </span>
+                            )}
+                        </div>
                         <span>{item.label}</span>
                     </NavLink>
                 ))}
@@ -64,4 +71,3 @@ const Sidebar = ({ onClose }) => {
 };
 
 export default Sidebar;
-
