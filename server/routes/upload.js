@@ -10,30 +10,24 @@ const uploadFields = upload.fields([{ name: 'image', maxCount: 1 }, { name: 'ima
 
 router.post('/', uploadFields, (req, res) => {
     try {
-        const baseUrl = `${req.protocol}://${req.get('host')}`;
-
-        // Helper to format path
-        const formatUrl = (file) => {
-            const validPath = file.path.replace(/\\/g, '/');
-            return `${baseUrl}/${validPath}`;
-        };
+        // Helper to get URL (Cloudinary returns full URL in path)
+        const getUrl = (file) => file.path;
 
         // Handle Multiple Images
         if (req.files && req.files['images']) {
-            const urls = req.files['images'].map(file => formatUrl(file));
+            const urls = req.files['images'].map(file => getUrl(file));
             return res.json({ urls });
         }
 
         // Handle Single Image (Legacy/Cover)
         if (req.files && req.files['image']) {
             const file = req.files['image'][0];
-            return res.json({ url: formatUrl(file) });
+            return res.json({ url: getUrl(file) });
         }
 
-        // Handle Single Image via .single() fallback if .files is empty but .file exists (though fields() populates .files)
-        // Just in case multer behaves differently or middleware changed.
+        // Fallback
         if (req.file) {
-            return res.json({ url: formatUrl(req.file) });
+            return res.json({ url: getUrl(req.file) });
         }
 
         return res.status(400).json({ msg: 'No file uploaded' });
