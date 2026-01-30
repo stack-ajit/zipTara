@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTrips } from '../store/useStore';
-import { ChevronLeft, ChevronRight, Upload, Trash2, Plus, Calendar, DollarSign, Image as ImageIcon, Check, X, MapPin } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Upload, Trash2, Plus, Calendar, DollarSign, Image as ImageIcon, Check, X, MapPin, Loader2 } from 'lucide-react';
 
 import LocationInput from '../components/LocationInput';
 import api from '../services/api';
@@ -12,6 +12,7 @@ const TripEditor = () => {
     const { addTrip, getTrip, updateTrip } = useTrips();
     const [trip, setTrip] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [uploadingStops, setUploadingStops] = useState({}); // Track uploading state per stop
 
     // Lightbox State
     const [selectedPhoto, setSelectedPhoto] = useState(null); // { url, index, stopId, dayId }
@@ -52,6 +53,21 @@ const TripEditor = () => {
 
         // If no ID (route is /trip/new) or explicit 'new', creates a draft
         if (!id || id === 'new') {
+            // Check for saved draft first
+            const savedDraft = localStorage.getItem('draft_trip_new');
+            if (savedDraft) {
+                try {
+                    const parsedDraft = JSON.parse(savedDraft);
+                    setTrip(parsedDraft);
+                    // Add a small delay to ensure loading state clears smoothly if we want to show a toast, usually instant
+                    setLoading(false);
+                    return;
+                } catch (e) {
+                    console.error("Failed to parse draft", e);
+                    localStorage.removeItem('draft_trip_new');
+                }
+            }
+
             setTrip({
                 id: crypto.randomUUID(), // specific ID for draft
                 title: '',
@@ -66,12 +82,40 @@ const TripEditor = () => {
             });
             setLoading(false);
         } else {
+            // Existing ID
+            const savedDraft = localStorage.getItem(`draft_trip_${id}`);
+            if (savedDraft) {
+                try {
+                    const parsedDraft = JSON.parse(savedDraft);
+                    // Use draft if it matches the ID we are looking for
+                    if (parsedDraft.id === id || parsedDraft._id === id) {
+                        setTrip(parsedDraft);
+                        setLoading(false);
+                        return;
+                    }
+                } catch (e) {
+                    console.error("Failed to parse draft", e);
+                    localStorage.removeItem(`draft_trip_${id}`);
+                }
+            }
+
             const t = getTrip(id);
             if (t) {
                 const tripData = JSON.parse(JSON.stringify(t));
                 // Ensure arrays exist
                 if (!tripData.days) tripData.days = [];
                 if (!tripData.tags) tripData.tags = [];
+
+                // CRITICAL FIX: Normalize _id to id for Editor compatibility
+                tripData.days = tripData.days.map(d => ({
+                    ...d,
+                    id: d.id || d._id,
+                    stops: (d.stops || []).map(s => ({
+                        ...s,
+                        id: s.id || s._id
+                    }))
+                }));
+
                 setTrip(tripData);
                 setLoading(false);
             } else {
@@ -86,7 +130,20 @@ const TripEditor = () => {
                 // No, original code had navigate('/').
             }
         }
-    }, [id, getTrip, navigate, trip]);
+    }, [id, getTrip, navigate]); // Removed 'trip' from dep array to avoid infinite reset loops, let internal state manage updates
+
+    // Auto-Save Effect
+    useEffect(() => {
+        if (!trip || loading) return;
+
+        const timer = setTimeout(() => {
+            const draftKey = (!id || id === 'new') ? 'draft_trip_new' : `draft_trip_${id}`;
+            localStorage.setItem(draftKey, JSON.stringify(trip));
+            // console.log("Auto-saved draft:", draftKey);
+        }, 1000); // Save after 1 second of inactivity
+
+        return () => clearTimeout(timer);
+    }, [trip, id, loading]);
 
     const [isSaving, setIsSaving] = useState(false);
 
@@ -125,6 +182,10 @@ const TripEditor = () => {
             }
 
             if (savedTrip) {
+                // Clear draft on successful save
+                const draftKey = (!id || id === 'new') ? 'draft_trip_new' : `draft_trip_${id}`;
+                localStorage.removeItem(draftKey);
+
                 navigate(`/trip/${savedTrip._id || savedTrip.id}`);
             } else {
                 throw new Error("Save operation returned null");
@@ -138,6 +199,7 @@ const TripEditor = () => {
     };
 
     const handleCancel = () => {
+        // Optional: verify if they want to lose draft? For now standard nav
         navigate(-1);
     };
 
@@ -161,6 +223,7 @@ const TripEditor = () => {
     const handleStopPhotoUpload = async (e, dayId, stopId) => {
         const files = e.target.files;
         if (files && files.length > 0) {
+            setUploadingStops(prev => ({ ...prev, [stopId]: true })); // Start loading
             try {
                 const formData = new FormData();
                 // Append all files with key 'images'
@@ -194,6 +257,8 @@ const TripEditor = () => {
             } catch (err) {
                 console.error("Stop Photo Upload Error:", err);
                 alert("Failed to upload photos");
+            } finally {
+                setUploadingStops(prev => ({ ...prev, [stopId]: false })); // Stop loading
             }
         }
     };
@@ -536,9 +601,18 @@ const TripEditor = () => {
                                                             <span className="text-xs font-bold text-gray-500">Photos</span>
                                                             <button
                                                                 onClick={() => document.getElementById(`photo-upload-${stop.id}`).click()}
-                                                                className="flex items-center text-xs font-bold text-gray-400 hover:text-gray-900 border px-2 py-1 rounded-md transition-colors"
+                                                                disabled={uploadingStops[stop.id]}
+                                                                className={`flex items-center text-xs font-bold border px-2 py-1 rounded-md transition-colors ${uploadingStops[stop.id] ? 'text-gray-400 bg-gray-50 cursor-not-allowed' : 'text-gray-400 hover:text-gray-900'}`}
                                                             >
-                                                                <ImageIcon className="w-3 h-3 mr-1" /> Add
+                                                                {uploadingStops[stop.id] ? (
+                                                                    <>
+                                                                        <Loader2 className="w-3 h-3 mr-1 animate-spin" /> Uploading...
+                                                                    </>
+                                                                ) : (
+                                                                    <>
+                                                                        <ImageIcon className="w-3 h-3 mr-1" /> Add
+                                                                    </>
+                                                                )}
                                                             </button>
                                                             <input
                                                                 id={`photo-upload-${stop.id}`}
@@ -546,6 +620,7 @@ const TripEditor = () => {
                                                                 multiple
                                                                 className="hidden"
                                                                 accept="image/*"
+                                                                disabled={uploadingStops[stop.id]}
                                                                 onChange={(e) => handleStopPhotoUpload(e, day.id, stop.id)}
                                                             />
                                                         </div>
