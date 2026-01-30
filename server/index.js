@@ -46,9 +46,10 @@ app.use(cors({
 // Rate Limiting
 const limiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 100, // Limit each IP to 100 requests per windowMs
+    max: 5000, // Limit each IP to 5000 requests per windowMs (Generous limit for smooth UX)
     standardHeaders: true,
     legacyHeaders: false,
+    message: "Too many requests from this IP, please try again in 15 minutes"
 });
 app.use(limiter);
 const PORT = process.env.PORT || 5000;
