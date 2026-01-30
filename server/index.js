@@ -17,17 +17,7 @@ app.use(helmet({
     crossOriginResourcePolicy: false,
 }));
 
-// Rate Limiting
-const limiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 100, // Limit each IP to 100 requests per windowMs
-    standardHeaders: true,
-    legacyHeaders: false,
-});
-app.use(limiter);
-const PORT = process.env.PORT || 5000;
-
-// Middleware
+// Middleware (CORS) - Must be before Rate Limiter so 429 errors get CORS headers
 const allowedOrigins = [
     process.env.CLIENT_URL,
     'https://ziptara.in',
@@ -52,6 +42,18 @@ app.use(cors({
     allowedHeaders: ['Content-Type', 'Authorization', 'x-auth-token'],
     credentials: true
 }));
+
+// Rate Limiting
+const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 100, // Limit each IP to 100 requests per windowMs
+    standardHeaders: true,
+    legacyHeaders: false,
+});
+app.use(limiter);
+const PORT = process.env.PORT || 5000;
+
+// Middleware (Body Parser)
 app.use(express.json({ limit: '50mb' })); // Increased limit for base64 images (temporary)
 
 // Data Sanitization
