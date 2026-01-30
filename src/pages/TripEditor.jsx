@@ -9,7 +9,7 @@ import api from '../services/api';
 const TripEditor = () => {
     const { id } = useParams();
     const navigate = useNavigate();
-    const { addTrip, getTrip, updateTrip } = useTrips();
+    const { addTrip, getTrip, updateTrip, fetchTrip } = useTrips();
     const [trip, setTrip] = useState(null);
     const [loading, setLoading] = useState(true);
     const [uploadingStops, setUploadingStops] = useState({}); // Track uploading state per stop
@@ -51,86 +51,89 @@ const TripEditor = () => {
         // Prevent overwriting local state on background re-renders if we already have this trip loaded
         if (trip && (trip.id === id || trip._id === id)) return;
 
-        // If no ID (route is /trip/new) or explicit 'new', creates a draft
-        if (!id || id === 'new') {
-            // Check for saved draft first
-            const savedDraft = localStorage.getItem('draft_trip_new');
-            if (savedDraft) {
-                try {
-                    const parsedDraft = JSON.parse(savedDraft);
-                    setTrip(parsedDraft);
-                    // Add a small delay to ensure loading state clears smoothly if we want to show a toast, usually instant
-                    setLoading(false);
-                    return;
-                } catch (e) {
-                    console.error("Failed to parse draft", e);
-                    localStorage.removeItem('draft_trip_new');
-                }
-            }
-
-            setTrip({
-                id: crypto.randomUUID(), // specific ID for draft
-                title: '',
-                location: '',
-                coordinates: null, // Init coordinates
-                startDate: '',
-                endDate: '',
-                cover: '',
-                isPublic: true,
-                tags: [],
-                days: []
-            });
-            setLoading(false);
-        } else {
-            // Existing ID
-            const savedDraft = localStorage.getItem(`draft_trip_${id}`);
-            if (savedDraft) {
-                try {
-                    const parsedDraft = JSON.parse(savedDraft);
-                    // Use draft if it matches the ID we are looking for
-                    if (parsedDraft.id === id || parsedDraft._id === id) {
+        const loadTrip = async () => {
+            // If no ID (route is /trip/new) or explicit 'new', creates a draft
+            if (!id || id === 'new') {
+                // Check for saved draft first
+                const savedDraft = localStorage.getItem('draft_trip_new');
+                if (savedDraft) {
+                    try {
+                        const parsedDraft = JSON.parse(savedDraft);
                         setTrip(parsedDraft);
                         setLoading(false);
                         return;
+                    } catch (e) {
+                        console.error("Failed to parse draft", e);
+                        localStorage.removeItem('draft_trip_new');
                     }
-                } catch (e) {
-                    console.error("Failed to parse draft", e);
-                    localStorage.removeItem(`draft_trip_${id}`);
                 }
-            }
 
-            const t = getTrip(id);
-            if (t) {
-                const tripData = JSON.parse(JSON.stringify(t));
-                // Ensure arrays exist
-                if (!tripData.days) tripData.days = [];
-                if (!tripData.tags) tripData.tags = [];
-
-                // CRITICAL FIX: Normalize _id to id for Editor compatibility
-                tripData.days = tripData.days.map(d => ({
-                    ...d,
-                    id: d.id || d._id,
-                    stops: (d.stops || []).map(s => ({
-                        ...s,
-                        id: s.id || s._id
-                    }))
-                }));
-
-                setTrip(tripData);
+                setTrip({
+                    id: crypto.randomUUID(),
+                    title: '',
+                    location: '',
+                    coordinates: null,
+                    startDate: '',
+                    endDate: '',
+                    cover: '',
+                    isPublic: true,
+                    tags: [],
+                    days: []
+                });
                 setLoading(false);
             } else {
-                // If trip isn't in store yet (e.g. refresh), valid fetchTrip logic might be needed here or handled by useStore initial load
-                // For now, if getTrip returns null/undefined, we wait or redirect.
-                // Assuming useStore fetches all. If page refresh, store might be empty initially.
-                // We should rely on store's loading state but for now this check handles the overwrite.
-                // If t is null but we are loading, do nothing?
-                // The original code navigated to / which is aggressive if store is just loading.
-                // But let's stick to the minimal fix for the overwrite bug first.
-                // navigate('/'); // Commented out to avoid redirect loop during loading? 
-                // No, original code had navigate('/').
+                // Existing ID - check for draft first
+                const savedDraft = localStorage.getItem(`draft_trip_${id}`);
+                if (savedDraft) {
+                    try {
+                        const parsedDraft = JSON.parse(savedDraft);
+                        if (parsedDraft.id === id || parsedDraft._id === id) {
+                            setTrip(parsedDraft);
+                            setLoading(false);
+                            return;
+                        }
+                    } catch (e) {
+                        console.error("Failed to parse draft", e);
+                        localStorage.removeItem(`draft_trip_${id}`);
+                    }
+                }
+
+                // Try to get from store first
+                let t = getTrip(id);
+
+                // If not in store, fetch from API
+                if (!t) {
+                    t = await fetchTrip(id);
+                }
+
+                if (t) {
+                    const tripData = JSON.parse(JSON.stringify(t));
+                    // Ensure arrays exist
+                    if (!tripData.days) tripData.days = [];
+                    if (!tripData.tags) tripData.tags = [];
+
+                    // CRITICAL FIX: Normalize _id to id for Editor compatibility
+                    tripData.days = tripData.days.map(d => ({
+                        ...d,
+                        id: d.id || d._id,
+                        stops: (d.stops || []).map(s => ({
+                            ...s,
+                            id: s.id || s._id
+                        }))
+                    }));
+
+                    setTrip(tripData);
+                    setLoading(false);
+                } else {
+                    // Trip not found - navigate away
+                    console.error("Trip not found:", id);
+                    navigate('/');
+                }
             }
-        }
-    }, [id, getTrip, navigate]); // Removed 'trip' from dep array to avoid infinite reset loops, let internal state manage updates
+        };
+
+        loadTrip();
+    }, [id, getTrip, fetchTrip, navigate]);
 
     // Auto-Save Effect
     useEffect(() => {
