@@ -20,7 +20,7 @@ exports.register = async (req, res) => {
 
         const payload = { user: { id: user.id } };
 
-        jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '7d' }, (err, token) => {
+        jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '30d' }, (err, token) => {
             if (err) throw err;
             res.json({ token, user: { id: user.id, username: user.username, email: user.email, fullName: user.fullName, dob: user.dob } });
         });
@@ -49,7 +49,7 @@ exports.login = async (req, res) => {
 
         const payload = { user: { id: user.id } };
 
-        jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '7d' }, (err, token) => {
+        jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '30d' }, (err, token) => {
             if (err) throw err;
             res.json({ token, user: { id: user.id, username: user.username, email: user.email, fullName: user.fullName, savedTrips: user.savedTrips } });
         });
