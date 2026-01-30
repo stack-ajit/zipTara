@@ -259,7 +259,8 @@ const TripEditor = () => {
                 }));
             } catch (err) {
                 console.error("Stop Photo Upload Error:", err);
-                alert("Failed to upload photos");
+                const errorMsg = err.response?.data?.msg || "Failed to upload photos. Images may be too large (max 5MB each).";
+                alert(errorMsg);
             } finally {
                 setUploadingStops(prev => ({ ...prev, [stopId]: false })); // Stop loading
             }
