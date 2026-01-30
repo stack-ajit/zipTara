@@ -28,10 +28,29 @@ app.use(limiter);
 const PORT = process.env.PORT || 5000;
 
 // Middleware
+const allowedOrigins = [
+    process.env.CLIENT_URL,
+    'https://ziptara.in',
+    'https://www.ziptara.in',
+    'http://localhost:5173',
+    'http://localhost:3000'
+].filter(Boolean);
+
 app.use(cors({
-    origin: process.env.CLIENT_URL || '*', // Allow Vercel app
+    origin: function (origin, callback) {
+        // Allow requests with no origin (like mobile apps or curl requests)
+        if (!origin) return callback(null, true);
+
+        if (allowedOrigins.indexOf(origin) !== -1 || process.env.CLIENT_URL === '*') {
+            callback(null, true);
+        } else {
+            console.log('Blocked by CORS:', origin); // Log blocked origins for debugging
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'x-auth-token']
+    allowedHeaders: ['Content-Type', 'Authorization', 'x-auth-token'],
+    credentials: true
 }));
 app.use(express.json({ limit: '50mb' })); // Increased limit for base64 images (temporary)
 
