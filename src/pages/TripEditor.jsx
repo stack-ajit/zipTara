@@ -163,6 +163,26 @@ const TripEditor = () => {
         return () => clearTimeout(timer);
     }, [trip, id, loading]);
 
+    // Auto-update day dates when startDate changes
+    const [prevStartDate, setPrevStartDate] = useState(null);
+    useEffect(() => {
+        if (!trip || loading || !trip.startDate) return;
+
+        // Only update if startDate actually changed (not on initial load)
+        if (prevStartDate !== null && prevStartDate !== trip.startDate && trip.days?.length > 0) {
+            const startDate = new Date(trip.startDate);
+            const updatedDays = trip.days.map((day, index) => {
+                const dayDate = new Date(startDate);
+                dayDate.setDate(startDate.getDate() + index);
+                return { ...day, date: dayDate.toISOString().split('T')[0] };
+            });
+
+            setTrip(prev => ({ ...prev, days: updatedDays }));
+        }
+
+        setPrevStartDate(trip.startDate);
+    }, [trip?.startDate, loading]);
+
     const [isSaving, setIsSaving] = useState(false);
 
     const handleSave = async () => {
@@ -283,10 +303,20 @@ const TripEditor = () => {
     };
 
     // Day & Stop Management
+    // Helper to calculate date for a day based on trip start date and day index
+    const getDateForDay = (dayIndex) => {
+        if (!trip?.startDate) return '';
+        const startDate = new Date(trip.startDate);
+        const dayDate = new Date(startDate);
+        dayDate.setDate(startDate.getDate() + dayIndex);
+        return dayDate.toISOString().split('T')[0]; // Format: YYYY-MM-DD
+    };
+
     const addDay = () => {
+        const newDayIndex = trip.days?.length || 0;
         const newDay = {
             id: `day-${crypto.randomUUID()}`,
-            date: '',
+            date: getDateForDay(newDayIndex), // Auto-set date based on trip start
             title: '',
             budget: '',
             notes: '',
