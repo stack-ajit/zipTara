@@ -1,7 +1,8 @@
 import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
-import { useEffect } from 'react';
+import { useEffect, useState, useRef } from 'react';
+import { Maximize2, Minimize2, ZoomIn, ZoomOut } from 'lucide-react';
 
 // Create numbered icon for markers
 const createNumberedIcon = (number) => {
@@ -40,7 +41,42 @@ const MapBounds = ({ bounds }) => {
     return null;
 };
 
+// Custom zoom controls component
+const CustomZoomControl = () => {
+    const map = useMap();
+
+    const handleZoomIn = () => {
+        map.zoomIn();
+    };
+
+    const handleZoomOut = () => {
+        map.zoomOut();
+    };
+
+    return (
+        <div className="absolute top-3 left-3 z-[1000] flex flex-col gap-1">
+            <button
+                onClick={handleZoomIn}
+                className="w-8 h-8 bg-white rounded-lg shadow-md flex items-center justify-center hover:bg-gray-100 transition-colors border border-gray-200"
+                title="Zoom In"
+            >
+                <ZoomIn className="w-4 h-4 text-gray-700" />
+            </button>
+            <button
+                onClick={handleZoomOut}
+                className="w-8 h-8 bg-white rounded-lg shadow-md flex items-center justify-center hover:bg-gray-100 transition-colors border border-gray-200"
+                title="Zoom Out"
+            >
+                <ZoomOut className="w-4 h-4 text-gray-700" />
+            </button>
+        </div>
+    );
+};
+
 const TripMap = ({ trip }) => {
+    const [isFullscreen, setIsFullscreen] = useState(false);
+    const mapContainerRef = useRef(null);
+
     // 1. Extract all valid coordinates from stops with sequential numbering
     let stopNumber = 0;
     const stopsWithCoords = trip?.days?.flatMap(day =>
@@ -55,6 +91,38 @@ const TripMap = ({ trip }) => {
                 };
             })
     ) || [];
+
+    // Toggle fullscreen
+    const toggleFullscreen = () => {
+        if (!isFullscreen) {
+            if (mapContainerRef.current?.requestFullscreen) {
+                mapContainerRef.current.requestFullscreen();
+            } else if (mapContainerRef.current?.webkitRequestFullscreen) {
+                mapContainerRef.current.webkitRequestFullscreen();
+            }
+        } else {
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+            } else if (document.webkitExitFullscreen) {
+                document.webkitExitFullscreen();
+            }
+        }
+    };
+
+    // Listen for fullscreen change events
+    useEffect(() => {
+        const handleFullscreenChange = () => {
+            setIsFullscreen(!!document.fullscreenElement);
+        };
+
+        document.addEventListener('fullscreenchange', handleFullscreenChange);
+        document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+
+        return () => {
+            document.removeEventListener('fullscreenchange', handleFullscreenChange);
+            document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
+        };
+    }, []);
 
     if (stopsWithCoords.length === 0) {
         // Fallback or empty state
@@ -71,17 +139,37 @@ const TripMap = ({ trip }) => {
     const positions = stopsWithCoords.map(stop => [stop.coordinates.lat, stop.coordinates.lng]);
 
     return (
-        <div className="h-[400px] w-full rounded-2xl overflow-hidden shadow-sm border border-gray-200 z-0">
+        <div
+            ref={mapContainerRef}
+            className={`relative rounded-2xl overflow-hidden shadow-sm border border-gray-200 ${isFullscreen ? 'h-screen w-screen' : 'h-[400px] w-full'}`}
+        >
+            {/* Fullscreen toggle button */}
+            <button
+                onClick={toggleFullscreen}
+                className="absolute top-3 right-3 z-[1000] w-8 h-8 bg-white rounded-lg shadow-md flex items-center justify-center hover:bg-gray-100 transition-colors border border-gray-200"
+                title={isFullscreen ? "Exit Fullscreen" : "View Fullscreen"}
+            >
+                {isFullscreen ? (
+                    <Minimize2 className="w-4 h-4 text-gray-700" />
+                ) : (
+                    <Maximize2 className="w-4 h-4 text-gray-700" />
+                )}
+            </button>
+
             <MapContainer
                 center={positions[0]}
                 zoom={13}
-                scrollWheelZoom={false}
+                scrollWheelZoom={true}
+                zoomControl={false}
                 className="h-full w-full"
             >
                 <TileLayer
                     attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                 />
+
+                {/* Custom Zoom Controls */}
+                <CustomZoomControl />
 
                 {/* Auto-zoom to fit markers */}
                 <MapBounds bounds={positions} />
@@ -114,4 +202,3 @@ const TripMap = ({ trip }) => {
 };
 
 export default TripMap;
-
