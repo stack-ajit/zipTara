@@ -82,21 +82,7 @@ const TripEditor = () => {
                 });
                 setLoading(false);
             } else {
-                // Existing ID - check for draft first
-                const savedDraft = localStorage.getItem(`draft_trip_${id}`);
-                if (savedDraft) {
-                    try {
-                        const parsedDraft = JSON.parse(savedDraft);
-                        if (parsedDraft.id === id || parsedDraft._id === id) {
-                            setTrip(parsedDraft);
-                            setLoading(false);
-                            return;
-                        }
-                    } catch (e) {
-                        console.error("Failed to parse draft", e);
-                        localStorage.removeItem(`draft_trip_${id}`);
-                    }
-                }
+                // Existing ID - ALWAYS fetch fresh data first, then check if draft has unsaved changes
 
                 // Try to get from store first
                 let t = getTrip(id);
@@ -121,6 +107,35 @@ const TripEditor = () => {
                             id: s.id || s._id
                         }))
                     }));
+
+                    // Check if there's a valid draft with unsaved changes
+                    const savedDraft = localStorage.getItem(`draft_trip_${id}`);
+                    if (savedDraft) {
+                        try {
+                            const parsedDraft = JSON.parse(savedDraft);
+                            // Only use draft if it matches the trip AND has more content than server version
+                            // (indicates user was actively editing)
+                            const draftHasMoreDays = (parsedDraft.days?.length || 0) >= (tripData.days?.length || 0);
+                            const draftHasStops = parsedDraft.days?.some(d => d.stops?.length > 0);
+                            const serverHasStops = tripData.days?.some(d => d.stops?.length > 0);
+
+                            // Only prefer draft if it has genuine content the server doesn't have
+                            if ((parsedDraft.id === id || parsedDraft._id === id) &&
+                                draftHasMoreDays && draftHasStops && !serverHasStops) {
+                                console.log("Using draft with unsaved changes");
+                                setTrip(parsedDraft);
+                                setLoading(false);
+                                return;
+                            } else {
+                                // Draft is stale or server has better data, clear it
+                                console.log("Clearing stale draft, using fresh server data");
+                                localStorage.removeItem(`draft_trip_${id}`);
+                            }
+                        } catch (e) {
+                            console.error("Failed to parse draft", e);
+                            localStorage.removeItem(`draft_trip_${id}`);
+                        }
+                    }
 
                     setTrip(tripData);
                     setLoading(false);
