@@ -2,20 +2,32 @@ import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import { useEffect } from 'react';
-import icon from 'leaflet/dist/images/marker-icon.png';
-import iconShadow from 'leaflet/dist/images/marker-shadow.png';
 
-// Fix Leaflet integer icon issue
-// delete L.Icon.Default.prototype._getIconUrl;
-
-let DefaultIcon = L.icon({
-    iconUrl: icon,
-    shadowUrl: iconShadow,
-    iconSize: [25, 41],
-    iconAnchor: [12, 41]
-});
-
-L.Marker.prototype.options.icon = DefaultIcon;
+// Create numbered icon for markers
+const createNumberedIcon = (number) => {
+    return L.divIcon({
+        className: 'custom-numbered-marker',
+        html: `
+            <div style="
+                background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+                color: white;
+                border-radius: 50%;
+                width: 28px;
+                height: 28px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: bold;
+                font-size: 12px;
+                border: 3px solid white;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            ">${number}</div>
+        `,
+        iconSize: [28, 28],
+        iconAnchor: [14, 14],
+        popupAnchor: [0, -14]
+    });
+};
 
 // Component to handle bounds updating
 const MapBounds = ({ bounds }) => {
@@ -29,18 +41,20 @@ const MapBounds = ({ bounds }) => {
 };
 
 const TripMap = ({ trip }) => {
-    // 1. Extract all valid coordinates from stops
+    // 1. Extract all valid coordinates from stops with sequential numbering
+    let stopNumber = 0;
     const stopsWithCoords = trip?.days?.flatMap(day =>
         day.stops?.filter(stop => stop.coordinates?.lat && stop.coordinates?.lng)
-            .map(stop => ({
-                ...stop,
-                dayDate: day.date,
-                dayTitle: day.title
-            }))
+            .map(stop => {
+                stopNumber++;
+                return {
+                    ...stop,
+                    number: stopNumber,
+                    dayDate: day.date,
+                    dayTitle: day.title
+                };
+            })
     ) || [];
-
-    // Also include main trip location if available (as a starting point or marker)
-    // const mainLocation = trip.coordinates?.lat ? trip.coordinates : null;
 
     if (stopsWithCoords.length === 0) {
         // Fallback or empty state
@@ -48,7 +62,7 @@ const TripMap = ({ trip }) => {
             <div className="h-full w-full bg-gray-100 flex flex-col items-center justify-center text-gray-500 rounded-xl p-4 text-center">
                 <p>No locations mapped yet.</p>
                 <p className="text-xs mt-2 opacity-60">
-                    Debug: found {stopsWithCoords.length} valid coordinates in {trip?.days?.length || 0} days.
+                    Add stops with locations to see the route on the map.
                 </p>
             </div>
         );
@@ -72,12 +86,19 @@ const TripMap = ({ trip }) => {
                 {/* Auto-zoom to fit markers */}
                 <MapBounds bounds={positions} />
 
-                {/* Markers */}
+                {/* Numbered Markers */}
                 {stopsWithCoords.map((stop, idx) => (
-                    <Marker key={`${stop.id}-${idx}`} position={[stop.coordinates.lat, stop.coordinates.lng]}>
+                    <Marker
+                        key={`${stop.id}-${idx}`}
+                        position={[stop.coordinates.lat, stop.coordinates.lng]}
+                        icon={createNumberedIcon(stop.number)}
+                    >
                         <Popup>
                             <div className="p-1">
-                                <h3 className="font-bold text-sm">{stop.title}</h3>
+                                <div className="flex items-center gap-2 mb-1">
+                                    <span className="bg-indigo-500 text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">{stop.number}</span>
+                                    <h3 className="font-bold text-sm">{stop.title}</h3>
+                                </div>
                                 <p className="text-xs text-gray-500">{stop.dayTitle || stop.dayDate}</p>
                                 {stop.desc && <p className="text-xs mt-1 line-clamp-2">{stop.desc}</p>}
                             </div>
@@ -93,3 +114,4 @@ const TripMap = ({ trip }) => {
 };
 
 export default TripMap;
+

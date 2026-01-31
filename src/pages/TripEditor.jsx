@@ -5,6 +5,7 @@ import { ChevronLeft, ChevronRight, Upload, Trash2, Plus, Calendar, DollarSign, 
 
 import LocationInput from '../components/LocationInput';
 import api from '../services/api';
+import { compressImage, compressImages } from '../utils/imageCompression';
 
 const TripEditor = () => {
     const { id } = useParams();
@@ -241,12 +242,18 @@ const TripEditor = () => {
         navigate(-1);
     };
 
+    const [uploadingCover, setUploadingCover] = useState(false);
+
     const handleCoverUpload = async (e) => {
         const file = e.target.files[0];
         if (file) {
+            setUploadingCover(true);
             try {
+                // Compress image before upload for faster transfer
+                const compressedFile = await compressImage(file, { maxWidth: 1600, quality: 0.85 });
+
                 const formData = new FormData();
-                formData.append('image', file);
+                formData.append('image', compressedFile);
                 const res = await api.post('/upload', formData, {
                     headers: { 'Content-Type': 'multipart/form-data' }
                 });
@@ -254,6 +261,8 @@ const TripEditor = () => {
             } catch (err) {
                 console.error("Upload Error:", err);
                 alert("Failed to upload image");
+            } finally {
+                setUploadingCover(false);
             }
         }
     };
@@ -263,10 +272,13 @@ const TripEditor = () => {
         if (files && files.length > 0) {
             setUploadingStops(prev => ({ ...prev, [stopId]: true })); // Start loading
             try {
+                // Compress all images before upload for faster transfer
+                const compressedFiles = await compressImages(files, { maxWidth: 1200, quality: 0.85 });
+
                 const formData = new FormData();
-                // Append all files with key 'images'
-                for (let i = 0; i < files.length; i++) {
-                    formData.append('images', files[i]);
+                // Append all compressed files with key 'images'
+                for (let i = 0; i < compressedFiles.length; i++) {
+                    formData.append('images', compressedFiles[i]);
                 }
 
                 const res = await api.post('/upload', formData, {
@@ -431,11 +443,16 @@ const TripEditor = () => {
                                     </button>
                                     <button
                                         onClick={() => document.getElementById('cover-upload-editor').click()}
-                                        className="px-3 py-1.5 bg-gray-900 text-white text-xs font-semibold rounded-lg shadow-sm hover:bg-black flex items-center"
+                                        disabled={uploadingCover}
+                                        className={`px-3 py-1.5 text-white text-xs font-semibold rounded-lg shadow-sm flex items-center ${uploadingCover ? 'bg-gray-400 cursor-not-allowed' : 'bg-gray-900 hover:bg-black'}`}
                                     >
-                                        <Upload className="w-3 h-3 mr-1" /> Upload
+                                        {uploadingCover ? (
+                                            <><Loader2 className="w-3 h-3 mr-1 animate-spin" /> Uploading...</>
+                                        ) : (
+                                            <><Upload className="w-3 h-3 mr-1" /> Upload</>
+                                        )}
                                     </button>
-                                    <input id="cover-upload-editor" type="file" className="hidden" accept="image/*" onChange={handleCoverUpload} />
+                                    <input id="cover-upload-editor" type="file" className="hidden" accept="image/*" onChange={handleCoverUpload} disabled={uploadingCover} />
                                 </div>
                             </div>
 
