@@ -1,7 +1,7 @@
 import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useMemo } from 'react';
 import { Maximize2, Minimize2, ZoomIn, ZoomOut } from 'lucide-react';
 
 // Create numbered icon for markers
@@ -78,19 +78,42 @@ const TripMap = ({ trip }) => {
     const mapContainerRef = useRef(null);
 
     // 1. Extract all valid coordinates from stops with sequential numbering
-    let stopNumber = 0;
-    const stopsWithCoords = trip?.days?.flatMap(day =>
-        day.stops?.filter(stop => stop.coordinates?.lat && stop.coordinates?.lng)
-            .map(stop => {
-                stopNumber++;
-                return {
-                    ...stop,
-                    number: stopNumber,
-                    dayDate: day.date,
-                    dayTitle: day.title
-                };
-            })
-    ) || [];
+    // memoize to prevent re-calculations and map re-renders
+    // 1. Extract all valid coordinates from stops with sequential numbering
+    // memoize to prevent re-calculations and map re-renders
+    const stopsWithCoords = useMemo(() => {
+        let stopNumber = 0;
+        return trip?.days?.flatMap(day =>
+            day.stops?.filter(stop => stop.coordinates?.lat && stop.coordinates?.lng)
+                .map(stop => {
+                    stopNumber++;
+                    return {
+                        ...stop,
+                        number: stopNumber,
+                        dayDate: day.date,
+                        dayTitle: day.title
+                    };
+                })
+        ) || [];
+    }, [trip]);
+
+    // Create a stable hash of coordinates to prevent unnecessary re-renders of the map bounds
+    // This is crucial: if we only depend on 'trip', any change to trip (like titles) would
+    // recreate the positions array, triggering MapBounds to re-fit (auto-zoom).
+    const coordinatesHash = useMemo(() => {
+        return JSON.stringify(trip?.days?.map(d => d.stops?.map(s => ({
+            lat: s.coordinates?.lat,
+            lng: s.coordinates?.lng
+        }))));
+    }, [trip]);
+
+    // Derived positions array - stable reference thanks to coordinatesHash
+    // We intentionally ignore linter warning about 'stopsWithCoords' dependency because
+    // we want positions to only update when coordinates actually change.
+    const positions = useMemo(() =>
+        stopsWithCoords.map(stop => [stop.coordinates.lat, stop.coordinates.lng]),
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        [coordinatesHash]);
 
     // Toggle fullscreen
     const toggleFullscreen = () => {
@@ -136,8 +159,6 @@ const TripMap = ({ trip }) => {
         );
     }
 
-    const positions = stopsWithCoords.map(stop => [stop.coordinates.lat, stop.coordinates.lng]);
-
     return (
         <div
             ref={mapContainerRef}
@@ -161,17 +182,23 @@ const TripMap = ({ trip }) => {
                 zoom={13}
                 scrollWheelZoom={true}
                 zoomControl={false}
-                className="h-full w-full"
+                className="h-full w-full z-0"
             >
+                {/* 
+                    Using CartoDB Voyager tiles for a cleaner, modern look map style.
+                    Alternatives: 
+                    - 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png' (Positron - very light/clean)
+                    - 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png' (Voyager - colorful but clean)
+                */}
                 <TileLayer
-                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+                    url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
                 />
 
                 {/* Custom Zoom Controls */}
                 <CustomZoomControl />
 
-                {/* Auto-zoom to fit markers */}
+                {/* Auto-zoom to fit markers - controlled via memoized bounds to prevent auto-pan loop */}
                 <MapBounds bounds={positions} />
 
                 {/* Numbered Markers */}
@@ -181,10 +208,10 @@ const TripMap = ({ trip }) => {
                         position={[stop.coordinates.lat, stop.coordinates.lng]}
                         icon={createNumberedIcon(stop.number)}
                     >
-                        <Popup>
+                        <Popup autoPan={true} autoPanPadding={[50, 50]}>
                             <div className="p-1">
                                 <div className="flex items-center gap-2 mb-1">
-                                    <span className="bg-indigo-500 text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">{stop.number}</span>
+                                    <span className="bg-indigo-500 text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center shadow-sm">{stop.number}</span>
                                     <h3 className="font-bold text-sm">{stop.title}</h3>
                                 </div>
                                 <p className="text-xs text-gray-500">{stop.dayTitle || stop.dayDate}</p>
@@ -195,7 +222,15 @@ const TripMap = ({ trip }) => {
                 ))}
 
                 {/* Route Line */}
-                <Polyline positions={positions} color="#6366f1" weight={4} opacity={0.7} />
+                <Polyline
+                    positions={positions}
+                    color="#6366f1"
+                    weight={4}
+                    opacity={0.8}
+                    dashArray="10, 10"
+                    lineCap="round"
+                    lineJoin="round"
+                />
             </MapContainer>
         </div>
     );
