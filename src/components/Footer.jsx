@@ -61,7 +61,7 @@ const Footer = () => {
                             <a href="https://www.instagram.com/_ziptara/" target="_blank" rel="noopener noreferrer" className="bg-white/10 backdrop-blur-sm p-2.5 rounded-xl hover:bg-gradient-to-br hover:from-pink-500 hover:to-orange-400 hover:text-white transition-all border border-white/10">
                                 <Instagram className="w-4 h-4" />
                             </a>
-                            <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="bg-white/10 backdrop-blur-sm p-2.5 rounded-xl hover:bg-blue-500 hover:text-white transition-all border border-white/10">
+                            <a href="https://x.com/_ziptara" target="_blank" rel="noopener noreferrer" className="bg-white/10 backdrop-blur-sm p-2.5 rounded-xl hover:bg-black hover:text-white transition-all border border-white/10">
                                 <Twitter className="w-4 h-4" />
                             </a>
                         </div>
