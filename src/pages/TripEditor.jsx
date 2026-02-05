@@ -250,7 +250,7 @@ const TripEditor = () => {
             setUploadingCover(true);
             try {
                 // Compress image before upload for faster transfer
-                const compressedFile = await compressImage(file, { maxWidth: 1600, quality: 0.85 });
+                const compressedFile = await compressImage(file, { maxWidth: 1600, quality: 0.90 });
 
                 const formData = new FormData();
                 formData.append('image', compressedFile);
@@ -273,7 +273,7 @@ const TripEditor = () => {
             setUploadingStops(prev => ({ ...prev, [stopId]: true })); // Start loading
             try {
                 // Compress all images before upload for faster transfer
-                const compressedFiles = await compressImages(files, { maxWidth: 1200, quality: 0.85 });
+                const compressedFiles = await compressImages(files, { maxWidth: 1200, quality: 0.90 });
 
                 const formData = new FormData();
                 // Append all compressed files with key 'images'
