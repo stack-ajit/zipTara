@@ -45,12 +45,12 @@ const Footer = () => {
                             <span className="text-xs">We'd love to hear from you!</span>
                         </p>
                         <a
-                            href="mailto:founder@ziptara.in"
+                            href="mailto:support@ziptara.in"
                             className="inline-flex items-center space-x-2 text-white bg-white/10 backdrop-blur-sm px-4 py-2 rounded-xl hover:bg-white/20 transition-all text-xs border border-white/10"
                             title="Send us an email"
                         >
                             <Mail className="w-3.5 h-3.5" />
-                            <span>founder@ziptara.in</span>
+                            <span>support@ziptara.in</span>
                         </a>
                     </div>
 
