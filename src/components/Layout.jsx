@@ -35,9 +35,9 @@ const Layout = ({ children }) => {
             </div>
 
             {/* Main Content Area */}
-            <div className="flex-1 lg:ml-56 flex flex-col min-h-screen gap-10">
+            <div className="flex-1 lg:ml-56 flex flex-col min-h-screen gap-10 min-w-0 overflow-x-hidden">
                 {/* Main Content */}
-                <main className="w-full px-4 sm:px-6 flex-grow pt-16 lg:pt-0">
+                <main className="w-full px-4 sm:px-6 flex-grow pt-16 lg:pt-0 min-w-0">
                     {children}
                 </main>
 
