@@ -32,6 +32,9 @@ const PosterCard = ({ trip }) => {
         toggleStar(trip.id || trip._id);
     };
 
+    // Calculate days
+    const days = trip.days?.length || Math.max(1, Math.ceil((new Date(trip.endDate) - new Date(trip.startDate)) / (1000 * 60 * 60 * 24)) + 1);
+
     return (
         <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
@@ -39,91 +42,94 @@ const PosterCard = ({ trip }) => {
             whileHover={{ scale: 1.02, zIndex: 10 }}
             transition={{ duration: 0.3 }}
             className="flex-shrink-0 w-full md:w-[260px] cursor-pointer group"
+            onClick={handleCardClick}
         >
-            {/* Image Card */}
-            <div
-                className="relative h-[280px] md:h-[240px] rounded-2xl overflow-hidden mb-3"
-                onClick={handleCardClick}
-            >
-                {/* Background Image */}
-                {trip.cover ? (
-                    <img
-                        src={trip.cover}
-                        alt={trip.title}
-                        className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                    />
-                ) : (
-                    <div className="absolute inset-0 bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500" />
-                )}
+            {/* Card Container with white background for mobile */}
+            <div className="bg-white rounded-2xl overflow-hidden shadow-sm md:shadow-none md:bg-transparent">
+                {/* Image Section */}
+                <div className="relative h-[200px] md:h-[240px] overflow-hidden md:rounded-2xl">
+                    {/* Background Image */}
+                    {trip.cover ? (
+                        <img
+                            src={trip.cover}
+                            alt={trip.title}
+                            className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                        />
+                    ) : (
+                        <div className="absolute inset-0 bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500" />
+                    )}
 
-                {/* Cinematic Gradient Overlay */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
+                    {/* Cinematic Gradient Overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
 
-                {/* Top Actions */}
-                <div className="absolute top-3 left-3 right-3 flex justify-between items-start z-10">
-                    {/* Author Badge */}
-                    <div className="bg-black/40 backdrop-blur-md px-2.5 py-1 rounded-full">
-                        <span className="text-white/90 text-xs font-medium">by {authorName}</span>
-                    </div>
-
-                    {/* Bookmark */}
+                    {/* Bookmark Button */}
                     <button
                         onClick={handleToggleSave}
-                        className={`p-2 rounded-full backdrop-blur-md transition-all ${isSaved
+                        className={`absolute top-3 right-3 p-2.5 rounded-full backdrop-blur-md transition-all z-10 ${isSaved
                             ? 'bg-blue-500 text-white shadow-lg'
-                            : 'bg-black/40 text-white/80 hover:bg-black/60 hover:text-white'
+                            : 'bg-white/20 text-white/80 hover:bg-white/30 hover:text-white'
                             }`}
                     >
-                        <Bookmark className={`w-4 h-4 ${isSaved ? 'fill-current' : ''}`} />
+                        <Bookmark className={`w-5 h-5 ${isSaved ? 'fill-current' : ''}`} />
                     </button>
+
+                    {/* Bottom Content on Image */}
+                    <div className="absolute bottom-0 left-0 right-0 p-4 z-10">
+                        {/* Location */}
+                        <div className="flex items-center text-white/80 text-xs font-medium mb-1">
+                            <MapPin className="w-3 h-3 mr-1" />
+                            <span className="truncate">{trip.location}</span>
+                        </div>
+
+                        {/* Title */}
+                        <h3 className="text-white font-bold text-lg leading-tight line-clamp-1">
+                            {trip.title}
+                        </h3>
+                    </div>
                 </div>
 
-                {/* Bottom Content */}
-                <div className="absolute bottom-0 left-0 right-0 p-4 z-10">
-                    {/* Location */}
-                    <div className="flex items-center text-white/70 text-xs font-medium mb-1">
-                        <MapPin className="w-3 h-3 mr-1" />
-                        <span className="truncate">{trip.location}</span>
+                {/* White Card Section - Mobile */}
+                <div className="p-4 md:p-0 md:pt-3">
+                    {/* Stats Row */}
+                    <div className="flex items-center justify-between mb-2 md:mb-0">
+                        {/* Date */}
+                        <div className="flex items-center gap-1 text-gray-600 text-sm">
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <rect x="3" y="4" width="18" height="18" rx="2" ry="2" strokeWidth="2" />
+                                <line x1="16" y1="2" x2="16" y2="6" strokeWidth="2" />
+                                <line x1="8" y1="2" x2="8" y2="6" strokeWidth="2" />
+                                <line x1="3" y1="10" x2="21" y2="10" strokeWidth="2" />
+                            </svg>
+                            <span>{new Date(trip.startDate).toLocaleDateString(undefined, { day: 'numeric', month: 'short' })}</span>
+                        </div>
+
+                        {/* Star and Comment */}
+                        <div className="flex items-center gap-4">
+                            <button
+                                onClick={handleToggleStar}
+                                className={`flex items-center gap-1 transition-colors ${isStarred ? 'text-yellow-500' : 'text-gray-400 hover:text-yellow-500'}`}
+                            >
+                                <Star className={`w-5 h-5 ${isStarred ? 'fill-current' : ''}`} />
+                                <span className="text-sm">{trip.stars?.length || 0}</span>
+                            </button>
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    navigate(`/trip/${trip.id || trip._id}#comments`);
+                                }}
+                                className="flex items-center gap-1 text-gray-400 hover:text-blue-500 transition-colors"
+                            >
+                                <MessageCircle className="w-5 h-5" />
+                                <span className="text-sm">{trip.commentsCount || 0}</span>
+                            </button>
+                        </div>
                     </div>
 
-                    {/* Title */}
-                    <h3 className="text-white font-bold text-lg leading-tight line-clamp-1">
-                        {trip.title}
-                    </h3>
-                </div>
+                    {/* Author */}
+                    <p className="text-gray-500 text-sm mb-1">by {authorName}</p>
 
-                {/* Hover Glow Effect */}
-                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
-                    <div className="absolute inset-0 bg-gradient-to-t from-blue-500/10 to-transparent" />
-                </div>
-            </div>
-
-            {/* Stats Footer - Below Card */}
-            <div className="flex items-center justify-between px-1">
-                {/* Date Info */}
-                <span className="text-gray-500 text-sm">
-                    {new Date(trip.startDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} • {trip.days?.length || Math.max(1, Math.ceil((new Date(trip.endDate) - new Date(trip.startDate)) / (1000 * 60 * 60 * 24)) + 1)} days
-                </span>
-
-                {/* Comment & Star */}
-                <div className="flex items-center gap-4">
-                    <button
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            navigate(`/trip/${trip.id || trip._id}#comments`);
-                        }}
-                        className="flex items-center gap-1.5 text-gray-500 hover:text-blue-500 transition-colors"
-                    >
-                        <MessageCircle className="w-4 h-4" />
-                        <span className="text-sm font-medium">{trip.commentsCount || 0}</span>
-                    </button>
-                    <button
-                        onClick={handleToggleStar}
-                        className={`flex items-center gap-1.5 transition-colors ${isStarred ? 'text-yellow-500' : 'text-gray-500 hover:text-yellow-500'}`}
-                    >
-                        <Star className={`w-4 h-4 ${isStarred ? 'fill-current' : ''}`} />
-                        <span className="text-sm font-medium">{trip.stars?.length || 0}</span>
-                    </button>
+                    {/* Duration */}
+                    <p className="text-gray-400 text-sm">{days} {days === 1 ? 'day' : 'days'}</p>
                 </div>
             </div>
         </motion.div>

@@ -40,7 +40,7 @@ const Home = () => {
 
     return (
         <Layout>
-            <div className="space-y-8 pb-20 overflow-x-hidden">
+            <div className="flex flex-col space-y-8 pb-20 overflow-x-hidden">
                 {/* Hero / Welcome Section */}
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
@@ -98,10 +98,10 @@ const Home = () => {
                                     </div>
                                 </div>
 
-                                {/* Primary CTA - Create Trip */}
+                                {/* Primary CTA - Create Trip - Hidden on mobile */}
                                 <Link
                                     to="/trip/new"
-                                    className="group relative bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-3.5 rounded-2xl font-semibold shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 flex items-center justify-center gap-2 whitespace-nowrap"
+                                    className="hidden md:flex group relative bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-3.5 rounded-2xl font-semibold shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 items-center justify-center gap-2 whitespace-nowrap"
                                 >
                                     <span className="text-xl leading-none">+</span>
                                     <span>Create Trip</span>
@@ -140,57 +140,87 @@ const Home = () => {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.6, delay: 0.3 }}
-                    className="w-full max-w-full"
+                    className="w-full max-w-full order-2 md:order-1"
                 >
-                    {/* Section Header */}
-                    <div className="flex items-center justify-between mb-6">
-                        <div>
-                            <h2 className="text-2xl font-bold text-slate-900">Get Inspired</h2>
-                            <p className="text-sm text-gray-500 mt-1">Explore journeys from fellow travelers</p>
+                    {/* Mobile: White card with curved lines */}
+                    <div className="md:hidden bg-white rounded-3xl p-6 shadow-sm border border-gray-100 relative overflow-hidden">
+                        {/* Topographic line pattern */}
+                        <div className="absolute inset-0 opacity-10 pointer-events-none overflow-hidden">
+                            <svg className="w-full h-full" viewBox="0 0 600 300" preserveAspectRatio="xMidYMid slice" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M0 200 Q 150 100 300 200 T 600 200" stroke="currentColor" strokeWidth="1" className="text-gray-400" />
+                                <path d="M0 250 Q 150 150 300 250 T 600 250" stroke="currentColor" strokeWidth="1" className="text-gray-400" />
+                                <path d="M0 150 Q 150 50 300 150 T 600 150" stroke="currentColor" strokeWidth="1" className="text-gray-400" />
+                                <path d="M0 100 Q 150 0 300 100 T 600 100" stroke="currentColor" strokeWidth="1" className="text-gray-300" />
+                            </svg>
                         </div>
+                        <div className="relative z-10">
+                            {/* Section Header */}
+                            <h2 className="text-xl font-bold text-slate-900 mb-4">Get Inspired</h2>
 
-                        {/* Navigation Arrows - Hidden on mobile */}
-                        <div className="hidden md:flex items-center gap-2">
-                            <button
-                                onClick={() => document.getElementById('poster-scroll').scrollBy({ left: -320, behavior: 'smooth' })}
-                                className="p-2.5 rounded-full bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-900 transition-all shadow-sm"
-                                aria-label="Scroll left"
-                            >
-                                <ChevronLeft className="w-5 h-5" />
-                            </button>
-                            <button
-                                onClick={() => document.getElementById('poster-scroll').scrollBy({ left: 320, behavior: 'smooth' })}
-                                className="p-2.5 rounded-full bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-900 transition-all shadow-sm"
-                                aria-label="Scroll right"
-                            >
-                                <ChevronRight className="w-5 h-5" />
-                            </button>
+                            {/* Mobile: Vertical Stack */}
+                            {tripsLoading ? (
+                                <div className="h-[200px] flex items-center justify-center">
+                                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-900"></div>
+                                </div>
+                            ) : displayPublicTrips.length === 0 ? (
+                                <div className="h-[200px] flex items-center justify-center">
+                                    <div className="text-center">
+                                        <Sparkles className="w-10 h-10 text-gray-300 mx-auto mb-3" />
+                                        <p className="text-gray-500">No public trips found for inspiration yet.</p>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="flex flex-col gap-6">
+                                    {displayPublicTrips.slice(0, 5).map((trip) => (
+                                        <PosterCard key={trip.id || trip._id} trip={trip} />
+                                    ))}
+                                </div>
+                            )}
                         </div>
                     </div>
 
-                    {/* Poster Stream */}
-                    {tripsLoading ? (
-                        <div className="h-[400px] flex items-center justify-center">
-                            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-900"></div>
-                        </div>
-                    ) : displayPublicTrips.length === 0 ? (
-                        <div className="h-[400px] flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl border border-dashed border-gray-200">
-                            <div className="text-center">
-                                <Sparkles className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-                                <p className="text-gray-500">No public trips found for inspiration yet.</p>
-                            </div>
-                        </div>
-                    ) : (
-                        <>
-                            {/* Mobile: Vertical Stack */}
-                            <div className="flex flex-col gap-6 md:hidden">
-                                {displayPublicTrips.slice(0, 5).map((trip) => (
-                                    <PosterCard key={trip.id || trip._id} trip={trip} />
-                                ))}
+                    {/* Desktop: Original layout */}
+                    <div className="hidden md:block">
+                        {/* Section Header */}
+                        <div className="flex items-center justify-between mb-6">
+                            <div>
+                                <h2 className="text-2xl font-bold text-slate-900">Get Inspired</h2>
+                                <p className="text-sm text-gray-500 mt-1">Explore journeys from fellow travelers</p>
                             </div>
 
-                            {/* Desktop: Horizontal Scroll */}
-                            <div className="hidden md:block overflow-hidden">
+                            {/* Navigation Arrows */}
+                            <div className="flex items-center gap-2">
+                                <button
+                                    onClick={() => document.getElementById('poster-scroll').scrollBy({ left: -320, behavior: 'smooth' })}
+                                    className="p-2.5 rounded-full bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-900 transition-all shadow-sm"
+                                    aria-label="Scroll left"
+                                >
+                                    <ChevronLeft className="w-5 h-5" />
+                                </button>
+                                <button
+                                    onClick={() => document.getElementById('poster-scroll').scrollBy({ left: 320, behavior: 'smooth' })}
+                                    className="p-2.5 rounded-full bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-900 transition-all shadow-sm"
+                                    aria-label="Scroll right"
+                                >
+                                    <ChevronRight className="w-5 h-5" />
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Poster Stream */}
+                        {tripsLoading ? (
+                            <div className="h-[400px] flex items-center justify-center">
+                                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-900"></div>
+                            </div>
+                        ) : displayPublicTrips.length === 0 ? (
+                            <div className="h-[400px] flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl border border-dashed border-gray-200">
+                                <div className="text-center">
+                                    <Sparkles className="w-10 h-10 text-gray-300 mx-auto mb-3" />
+                                    <p className="text-gray-500">No public trips found for inspiration yet.</p>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="overflow-hidden">
                                 <div
                                     id="poster-scroll"
                                     className="flex gap-5 overflow-x-auto pb-4 pt-2 scroll-smooth"
@@ -202,8 +232,8 @@ const Home = () => {
                                     ))}
                                 </div>
                             </div>
-                        </>
-                    )}
+                        )}
+                    </div>
                 </motion.div>
 
                 {/* Create Trip CTA Card */}
@@ -211,7 +241,7 @@ const Home = () => {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5, delay: 0.4 }}
-                    className="w-full max-w-full"
+                    className="w-full max-w-full order-1 md:order-2"
                 >
                     <div className="group bg-white rounded-3xl p-8 shadow-sm border border-gray-100 relative overflow-hidden hover:shadow-xl hover:border-gray-200 transition-all duration-300">
                         {/* Subtle gradient background */}
