@@ -3,7 +3,6 @@ import { useState, useMemo, useEffect } from 'react';
 import Layout from '../components/Layout';
 import { useTrips } from '../store/useStore';
 import TripCard from '../components/TripCard';
-import PosterCard from '../components/PosterCard';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 
@@ -40,7 +39,7 @@ const Home = () => {
 
     return (
         <Layout>
-            <div className="flex flex-col space-y-8 pb-20 overflow-x-hidden">
+            <div className="space-y-8 pb-20">
                 {/* Hero / Welcome Section */}
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
@@ -75,12 +74,12 @@ const Home = () => {
                                 </span>
                             </motion.h1>
 
-                            {/* Search Bar & Create Trip Row */}
+                            {/* Search Bar & Toggle Row */}
                             <motion.div
                                 initial={{ opacity: 0, y: 10 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ duration: 0.5, delay: 0.4 }}
-                                className="mt-4 flex flex-col sm:flex-row items-stretch sm:items-center gap-3"
+                                className="mt-4 flex items-center gap-4"
                             >
                                 <div className={`relative flex-grow max-w-lg transition-all duration-300 ${searchFocused ? 'scale-[1.02]' : ''}`}>
                                     <div className={`absolute -inset-1 bg-gradient-to-r from-blue-500 to-purple-500 rounded-2xl blur-lg transition-opacity duration-300 ${searchFocused ? 'opacity-30' : 'opacity-0'}`}></div>
@@ -97,15 +96,6 @@ const Home = () => {
                                         <Search className="w-5 h-5" />
                                     </div>
                                 </div>
-
-                                {/* Primary CTA - Create Trip - Hidden on mobile */}
-                                <Link
-                                    to="/trip/new"
-                                    className="hidden md:flex group relative bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-3.5 rounded-2xl font-semibold shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 items-center justify-center gap-2 whitespace-nowrap"
-                                >
-                                    <span className="text-xl leading-none">+</span>
-                                    <span>Create Trip</span>
-                                </Link>
                             </motion.div>
                         </div>
 
@@ -135,153 +125,110 @@ const Home = () => {
                     </div>
                 </motion.div>
 
-                {/* Get Inspired Section - Full Width */}
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.6, delay: 0.3 }}
-                    className="w-full max-w-full order-2 md:order-1"
-                >
-                    {/* Mobile: White card with curved lines */}
-                    <div className="md:hidden bg-white rounded-3xl p-6 shadow-sm border border-gray-100 relative overflow-hidden">
-                        {/* Topographic line pattern */}
-                        <div className="absolute inset-0 opacity-10 pointer-events-none overflow-hidden">
-                            <svg className="w-full h-full" viewBox="0 0 600 300" preserveAspectRatio="xMidYMid slice" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M0 200 Q 150 100 300 200 T 600 200" stroke="currentColor" strokeWidth="1" className="text-gray-400" />
-                                <path d="M0 250 Q 150 150 300 250 T 600 250" stroke="currentColor" strokeWidth="1" className="text-gray-400" />
-                                <path d="M0 150 Q 150 50 300 150 T 600 150" stroke="currentColor" strokeWidth="1" className="text-gray-400" />
-                                <path d="M0 100 Q 150 0 300 100 T 600 100" stroke="currentColor" strokeWidth="1" className="text-gray-300" />
-                            </svg>
-                        </div>
-                        <div className="relative z-10">
-                            {/* Section Header */}
-                            <h2 className="text-xl font-bold text-slate-900 mb-4">Get Inspired</h2>
+                {/* Main Grid Content */}
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
 
-                            {/* Mobile: Vertical Stack */}
+                    {/* Left Column: My Trips / Create Trip CTA */}
+                    <motion.div
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.5, delay: 0.2 }}
+                        className="lg:col-span-5 xl:col-span-4"
+                    >
+                        {/* Card with topographic pattern */}
+                        <div className="group bg-white rounded-3xl p-8 shadow-sm border border-gray-100 relative overflow-hidden min-h-[400px] flex flex-col items-center justify-center text-center hover:shadow-xl hover:border-gray-200 transition-all duration-300">
+                            {/* Topographic pattern simulation via SVG or gradient/image if available, else simple dashed border */}
+                            <div className="absolute inset-0 opacity-5 pointer-events-none" style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%239C92AC' fill-opacity='0.2' fill-rule='evenodd'/%3E%3C/svg%3E")` }}></div>
+                            <div className="absolute inset-0 opacity-10 pointer-events-none flex items-center justify-center">
+                                {/* SVG Pattern simulating topo lines */}
+                                <svg width="100%" height="100%" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M0 200 Q 150 100 300 200 T 600 200" stroke="black" strokeWidth="0.5" />
+                                    <path d="M0 250 Q 150 150 300 250 T 600 250" stroke="black" strokeWidth="0.5" />
+                                    <path d="M0 150 Q 150 50 300 150 T 600 150" stroke="black" strokeWidth="0.5" />
+                                </svg>
+                            </div>
+
+                            <div className="relative z-10 w-full flex flex-col items-center">
+                                <motion.div
+                                    animate={{ y: [0, -8, 0] }}
+                                    transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                                    className="w-16 h-16 bg-gradient-to-br from-slate-100 to-slate-200 rounded-2xl flex items-center justify-center mb-6 shadow-inner"
+                                >
+                                    <MapPin className="text-slate-500 w-8 h-8" />
+                                </motion.div>
+                                <h3 className="text-xl font-bold text-gray-900 mb-2">
+                                    {trips.length === 0 ? 'No trips yet' : 'zip your next trip'}
+                                </h3>
+                                <p className="text-gray-500 max-w-[200px] mb-8 text-sm">
+                                    {trips.length === 0 ? 'Create your first trip to start your travel journal.' : 'Ready for a new adventure? Start zipping now.'}
+                                </p>
+                                <Link
+                                    to="/trip/new"
+                                    className="group/btn relative bg-slate-900 text-white px-6 py-3 rounded-xl font-medium shadow-xl hover:bg-black hover:scale-105 transition-all duration-300 flex items-center gap-2 overflow-hidden"
+                                >
+                                    <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 opacity-0 group-hover/btn:opacity-100 transition-opacity duration-300"></div>
+                                    <span className="relative text-lg pb-0.5">+</span>
+                                    <span className="relative">{trips.length === 0 ? 'Create your first trip' : 'Create new trip'}</span>
+                                </Link>
+                            </div>
+                        </div>
+                    </motion.div>
+
+                    {/* Right Column: Get Inspired */}
+                    <motion.div
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.5, delay: 0.3 }}
+                        className="lg:col-span-7 xl:col-span-8"
+                    >
+                        <div className="bg-white rounded-3xl p-8 shadow-sm border border-gray-100 h-full hover:shadow-lg transition-shadow duration-300">
+                            <div className="flex items-center justify-between mb-6">
+                                <h2 className="text-2xl font-bold text-slate-900">Get Inspired</h2>
+                            </div>
+
                             {tripsLoading ? (
-                                <div className="h-[200px] flex items-center justify-center">
+                                <div className="h-full flex items-center justify-center">
                                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-900"></div>
                                 </div>
                             ) : displayPublicTrips.length === 0 ? (
-                                <div className="h-[200px] flex items-center justify-center">
-                                    <div className="text-center">
-                                        <Sparkles className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-                                        <p className="text-gray-500">No public trips found for inspiration yet.</p>
-                                    </div>
+                                <div className="text-center py-12">
+                                    <p className="text-gray-500">No public trips found for inspiration yet.</p>
                                 </div>
                             ) : (
-                                <div className="flex flex-col gap-6">
-                                    {displayPublicTrips.slice(0, 5).map((trip) => (
-                                        <PosterCard key={trip.id || trip._id} trip={trip} />
-                                    ))}
+                                <div className="relative group/scroll px-1">
+                                    <div className="flex items-end gap-2">
+                                        {/* Left Button */}
+                                        <button
+                                            onClick={() => document.getElementById('trips-scroll-container').scrollBy({ left: -300, behavior: 'smooth' })}
+                                            className="mb-6 p-2 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 transition-colors hidden md:block"
+                                            aria-label="Scroll left"
+                                        >
+                                            <ChevronLeft className="w-5 h-5" />
+                                        </button>
+
+                                        {/* Scroll Container */}
+                                        <div id="trips-scroll-container" className="flex-1 flex flex-col space-y-6 md:flex-row md:space-y-0 md:space-x-6 md:overflow-x-auto pb-6 snap-y md:snap-x sleek-scrollbar scroll-smooth px-1">
+                                            {displayPublicTrips.map((trip) => (
+                                                <div key={trip.id} className="w-full md:min-w-[280px] md:w-auto snap-center">
+                                                    <TripCard trip={trip} />
+                                                </div>
+                                            ))}
+                                        </div>
+
+                                        {/* Right Button */}
+                                        <button
+                                            onClick={() => document.getElementById('trips-scroll-container').scrollBy({ left: 300, behavior: 'smooth' })}
+                                            className="mb-6 p-2 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 transition-colors hidden md:block"
+                                            aria-label="Scroll right"
+                                        >
+                                            <ChevronRight className="w-5 h-5" />
+                                        </button>
+                                    </div>
                                 </div>
                             )}
                         </div>
-                    </div>
-
-                    {/* Desktop: Original layout */}
-                    <div className="hidden md:block">
-                        {/* Section Header */}
-                        <div className="flex items-center justify-between mb-6">
-                            <div>
-                                <h2 className="text-2xl font-bold text-slate-900">Get Inspired</h2>
-                                <p className="text-sm text-gray-500 mt-1">Explore journeys from fellow travelers</p>
-                            </div>
-
-                            {/* Navigation Arrows */}
-                            <div className="flex items-center gap-2">
-                                <button
-                                    onClick={() => document.getElementById('poster-scroll').scrollBy({ left: -320, behavior: 'smooth' })}
-                                    className="p-2.5 rounded-full bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-900 transition-all shadow-sm"
-                                    aria-label="Scroll left"
-                                >
-                                    <ChevronLeft className="w-5 h-5" />
-                                </button>
-                                <button
-                                    onClick={() => document.getElementById('poster-scroll').scrollBy({ left: 320, behavior: 'smooth' })}
-                                    className="p-2.5 rounded-full bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-900 transition-all shadow-sm"
-                                    aria-label="Scroll right"
-                                >
-                                    <ChevronRight className="w-5 h-5" />
-                                </button>
-                            </div>
-                        </div>
-
-                        {/* Poster Stream */}
-                        {tripsLoading ? (
-                            <div className="h-[400px] flex items-center justify-center">
-                                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-900"></div>
-                            </div>
-                        ) : displayPublicTrips.length === 0 ? (
-                            <div className="h-[400px] flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl border border-dashed border-gray-200">
-                                <div className="text-center">
-                                    <Sparkles className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-                                    <p className="text-gray-500">No public trips found for inspiration yet.</p>
-                                </div>
-                            </div>
-                        ) : (
-                            <div className="overflow-hidden">
-                                <div
-                                    id="poster-scroll"
-                                    className="flex gap-5 overflow-x-auto pb-4 pt-2 scroll-smooth"
-                                    style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-                                >
-                                    <style>{`#poster-scroll::-webkit-scrollbar { display: none; }`}</style>
-                                    {displayPublicTrips.map((trip) => (
-                                        <PosterCard key={trip.id || trip._id} trip={trip} />
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-                    </div>
-                </motion.div>
-
-                {/* Create Trip CTA Card */}
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: 0.4 }}
-                    className="w-full max-w-full order-1 md:order-2"
-                >
-                    <div className="group bg-white rounded-3xl p-8 shadow-sm border border-gray-100 relative overflow-hidden hover:shadow-xl hover:border-gray-200 transition-all duration-300">
-                        {/* Subtle gradient background */}
-                        <div className="absolute inset-0 bg-gradient-to-br from-gray-50 via-white to-gray-50 opacity-50"></div>
-
-                        {/* Topographic line pattern */}
-                        <div className="absolute inset-0 opacity-10 pointer-events-none overflow-hidden">
-                            <svg className="w-full h-full" viewBox="0 0 600 300" preserveAspectRatio="xMidYMid slice" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M0 200 Q 150 100 300 200 T 600 200" stroke="currentColor" strokeWidth="1" className="text-gray-400" />
-                                <path d="M0 250 Q 150 150 300 250 T 600 250" stroke="currentColor" strokeWidth="1" className="text-gray-400" />
-                                <path d="M0 150 Q 150 50 300 150 T 600 150" stroke="currentColor" strokeWidth="1" className="text-gray-400" />
-                                <path d="M0 100 Q 150 0 300 100 T 600 100" stroke="currentColor" strokeWidth="1" className="text-gray-300" />
-                            </svg>
-                        </div>
-
-                        <div className="relative z-10 flex flex-col items-center justify-center text-center py-6">
-                            <motion.div
-                                animate={{ y: [0, -8, 0] }}
-                                transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-                                className="w-16 h-16 bg-gradient-to-br from-slate-100 to-slate-200 rounded-2xl flex items-center justify-center mb-6 shadow-inner"
-                            >
-                                <MapPin className="text-slate-500 w-8 h-8" />
-                            </motion.div>
-                            <h3 className="text-xl font-bold text-gray-900 mb-2">
-                                {trips.length === 0 ? 'No trips yet' : 'zip your next trip'}
-                            </h3>
-                            <p className="text-gray-500 max-w-[280px] mb-6 text-sm">
-                                {trips.length === 0 ? 'Create your first trip to start your travel journal.' : 'Ready for a new adventure? Start zipping now.'}
-                            </p>
-                            <Link
-                                to="/trip/new"
-                                className="group/btn relative bg-slate-900 text-white px-6 py-3 rounded-xl font-medium shadow-xl hover:bg-black hover:scale-105 transition-all duration-300 flex items-center gap-2 overflow-hidden"
-                            >
-                                <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 opacity-0 group-hover/btn:opacity-100 transition-opacity duration-300"></div>
-                                <span className="relative text-lg pb-0.5">+</span>
-                                <span className="relative">{trips.length === 0 ? 'Create your first trip' : 'Create new trip'}</span>
-                            </Link>
-                        </div>
-                    </div>
-                </motion.div>
+                    </motion.div>
+                </div>
             </div>
         </Layout>
     );

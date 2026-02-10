@@ -88,9 +88,10 @@ const TripEditor = () => {
                 // Try to get from store first
                 let t = getTrip(id);
 
-                // If not in store, fetch from API
-                if (!t) {
-                    t = await fetchTrip(id);
+                // If not in store OR if it's a summary (missing days), fetch full details
+                if (!t || !t.days) {
+                    const fullTrip = await fetchTrip(id);
+                    if (fullTrip) t = fullTrip;
                 }
 
                 if (t) {

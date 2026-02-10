@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
 import Layout from '../components/Layout';
 import { useTrips } from '../store/useStore';
 import TripCard from '../components/TripCard';
-import { User, Mail, Calendar, MapPin, Lock, Plus } from 'lucide-react';
+import { User, Mail, Calendar, MapPin, Edit2, Globe, Lock } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 const MyProfile = () => {
     const { user, trips, tripsLoading, fetchTrips } = useTrips();
@@ -126,31 +126,17 @@ const MyProfile = () => {
                     <div>
                         <div className="flex justify-between items-center mb-6">
                             <h2 className="text-2xl font-bold text-slate-900">My Trips</h2>
-                            <div className="flex items-center gap-3">
-                                {/* Create Trip Button - only show when user has trips */}
-                                {trips.length > 0 && (
-                                    <Link
-                                        to="/trip/new"
-                                        className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-md hover:shadow-lg hover:scale-105 transition-all duration-200"
-                                    >
-                                        <Plus className="w-4 h-4" />
-                                        <span>Add Trip</span>
-                                    </Link>
-                                )}
-                                {/* Private Toggle - only show when user has trips */}
-                                {trips.length > 0 && (
-                                    <button
-                                        onClick={() => setShowPrivate(!showPrivate)}
-                                        className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 active:scale-95 border ${showPrivate
-                                            ? 'bg-slate-900 text-white border-slate-900 shadow-md'
-                                            : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300 hover:bg-gray-50'
-                                            }`}
-                                    >
-                                        <Lock className={`w-4 h-4 ${showPrivate ? 'text-white' : 'text-gray-500'}`} />
-                                        <span>Private Trips</span>
-                                    </button>
-                                )}
-                            </div>
+                            {/* Private Toggle */}
+                            <button
+                                onClick={() => setShowPrivate(!showPrivate)}
+                                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 active:scale-95 border ${showPrivate
+                                    ? 'bg-slate-900 text-white border-slate-900 shadow-md'
+                                    : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                                    }`}
+                            >
+                                <Lock className={`w-4 h-4 ${showPrivate ? 'text-white' : 'text-gray-500'}`} />
+                                <span>Private Trips</span>
+                            </button>
                         </div>
 
                         {tripsLoading ? (
@@ -158,28 +144,10 @@ const MyProfile = () => {
                                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
                             </div>
                         ) : trips.length === 0 ? (
-                            <div className="text-center py-20 bg-white rounded-3xl border border-dashed border-gray-200 relative overflow-hidden">
-                                {/* Topographic line pattern */}
-                                <div className="absolute inset-0 opacity-10 pointer-events-none overflow-hidden">
-                                    <svg className="w-full h-full" viewBox="0 0 600 300" preserveAspectRatio="xMidYMid slice" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                        <path d="M0 200 Q 150 100 300 200 T 600 200" stroke="currentColor" strokeWidth="1" className="text-gray-400" />
-                                        <path d="M0 250 Q 150 150 300 250 T 600 250" stroke="currentColor" strokeWidth="1" className="text-gray-400" />
-                                        <path d="M0 150 Q 150 50 300 150 T 600 150" stroke="currentColor" strokeWidth="1" className="text-gray-400" />
-                                        <path d="M0 100 Q 150 0 300 100 T 600 100" stroke="currentColor" strokeWidth="1" className="text-gray-300" />
-                                    </svg>
-                                </div>
-                                <div className="relative z-10">
-                                    <MapPin className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                                    <h3 className="text-xl font-bold text-gray-900 mb-2">No trips yet</h3>
-                                    <p className="text-gray-500 mb-6">Start your journey by creating your first trip!</p>
-                                    <Link
-                                        to="/trip/new"
-                                        className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-medium bg-slate-900 text-white shadow-lg hover:bg-black hover:scale-105 transition-all duration-200"
-                                    >
-                                        <Plus className="w-5 h-5" />
-                                        <span>Create your first trip</span>
-                                    </Link>
-                                </div>
+                            <div className="text-center py-20 bg-white rounded-3xl border border-dashed border-gray-200">
+                                <MapPin className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                                <h3 className="text-xl font-bold text-gray-900 mb-2">No trips yet</h3>
+                                <p className="text-gray-500 mb-6">Start your journey by creating your first trip!</p>
                             </div>
                         ) : filteredTrips.length === 0 ? (
                             <div className="text-center py-20 bg-white rounded-3xl border border-dashed border-gray-200">
@@ -192,13 +160,6 @@ const MyProfile = () => {
                                         ? 'Your private collection is empty.'
                                         : 'Start your journey by creating your first trip!'}
                                 </p>
-                                <Link
-                                    to="/trip/new"
-                                    className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-medium bg-slate-900 text-white shadow-lg hover:bg-black hover:scale-105 transition-all duration-200"
-                                >
-                                    <Plus className="w-5 h-5" />
-                                    <span>{showPrivate ? 'Create a private trip' : 'Create your first trip'}</span>
-                                </Link>
                             </div>
                         ) : (
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
