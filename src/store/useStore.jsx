@@ -82,6 +82,20 @@ export const TripProvider = ({ children }) => {
         }
     };
 
+    const googleLogin = async (credential) => {
+        try {
+            const res = await api.post('/auth/google', { credential });
+            localStorage.setItem('token', res.data.token);
+            setToken(res.data.token);
+            setUser(res.data.user);
+            return true;
+        } catch (err) {
+            console.error("Google Login Error:", err.response?.data?.msg);
+            setError(err.response?.data?.msg || 'Google login failed');
+            return false;
+        }
+    };
+
     const updateProfile = async (fullName, dob) => {
         try {
             const res = await api.put('/auth/profile', { fullName, dob });
@@ -400,6 +414,7 @@ export const TripProvider = ({ children }) => {
             user,
             error,
             login,
+            googleLogin,
             register,
             updateProfile,
             changePassword,

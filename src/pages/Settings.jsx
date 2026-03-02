@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useTrips } from '../store/useStore';
 import Layout from '../components/Layout';
-import { User, Lock, Save, ExternalLink, Calendar, Mail } from 'lucide-react';
+import { User, Lock, Save, ExternalLink, Calendar, Mail, Eye, EyeOff } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const Settings = () => {
@@ -22,6 +22,9 @@ const Settings = () => {
     // UI States
     const [activeTab, setActiveTab] = useState('profile'); // 'profile' | 'security'
     const [loading, setLoading] = useState(false);
+    const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+    const [showNewPassword, setShowNewPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [message, setMessage] = useState({ text: '', type: '' }); // type: 'success' | 'error'
 
     const handleProfileSubmit = async (e) => {
@@ -192,38 +195,68 @@ const Settings = () => {
 
                                     <div>
                                         <label className="block text-sm font-bold text-gray-700 mb-2">Current Password</label>
-                                        <input
-                                            type="password"
-                                            required
-                                            value={passwordData.currentPassword}
-                                            onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
-                                            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 outline-none transition-all"
-                                        />
+                                        <div className="relative">
+                                            <input
+                                                type={showCurrentPassword ? "text" : "password"}
+                                                required
+                                                value={passwordData.currentPassword}
+                                                onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
+                                                className="w-full px-4 py-3 pr-12 rounded-xl border border-gray-200 focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 outline-none transition-all"
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                                                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700 transition-colors"
+                                                tabIndex={-1}
+                                            >
+                                                {showCurrentPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                                            </button>
+                                        </div>
                                     </div>
 
                                     <div>
                                         <label className="block text-sm font-bold text-gray-700 mb-2">New Password</label>
-                                        <input
-                                            type="password"
-                                            required
-                                            minLength={6}
-                                            value={passwordData.newPassword}
-                                            onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
-                                            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 outline-none transition-all"
-                                        />
+                                        <div className="relative">
+                                            <input
+                                                type={showNewPassword ? "text" : "password"}
+                                                required
+                                                minLength={6}
+                                                value={passwordData.newPassword}
+                                                onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
+                                                className="w-full px-4 py-3 pr-12 rounded-xl border border-gray-200 focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 outline-none transition-all"
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowNewPassword(!showNewPassword)}
+                                                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700 transition-colors"
+                                                tabIndex={-1}
+                                            >
+                                                {showNewPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                                            </button>
+                                        </div>
                                         <p className="text-xs text-gray-400 mt-1">Must be at least 6 characters long</p>
                                     </div>
 
                                     <div>
                                         <label className="block text-sm font-bold text-gray-700 mb-2">Confirm New Password</label>
-                                        <input
-                                            type="password"
-                                            required
-                                            minLength={6}
-                                            value={passwordData.confirmPassword}
-                                            onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
-                                            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 outline-none transition-all"
-                                        />
+                                        <div className="relative">
+                                            <input
+                                                type={showConfirmPassword ? "text" : "password"}
+                                                required
+                                                minLength={6}
+                                                value={passwordData.confirmPassword}
+                                                onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
+                                                className="w-full px-4 py-3 pr-12 rounded-xl border border-gray-200 focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 outline-none transition-all"
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700 transition-colors"
+                                                tabIndex={-1}
+                                            >
+                                                {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                                            </button>
+                                        </div>
                                     </div>
 
                                     <div className="pt-4 flex justify-end">

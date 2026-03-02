@@ -27,4 +27,9 @@ router.put('/profile', auth, authController.updateProfile);
 // @access  Private
 router.put('/password', auth, authController.changePassword);
 
+// @route   POST api/auth/google
+// @desc    Authenticate user with Google OAuth
+// @access  Public
+router.post('/google', authController.googleAuth);
+
 module.exports = router;
