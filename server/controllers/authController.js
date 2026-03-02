@@ -62,13 +62,30 @@ exports.login = async (req, res) => {
 
 // Update User Profile
 exports.updateProfile = async (req, res) => {
-    const { fullName, dob } = req.body;
+    const { fullName, dob, username } = req.body;
     try {
         let user = await User.findById(req.user.id);
         if (!user) return res.status(404).json({ msg: 'User not found' });
 
-        user.fullName = fullName;
-        user.dob = dob;
+        // If username is being changed, validate uniqueness and format
+        if (username && username !== user.username) {
+            // Validate username format
+            if (username.length < 3) {
+                return res.status(400).json({ msg: 'Username must be at least 3 characters' });
+            }
+            if (!/^[a-zA-Z0-9_]+$/.test(username)) {
+                return res.status(400).json({ msg: 'Username can only contain letters, numbers, and underscores' });
+            }
+
+            const existingUser = await User.findOne({ username });
+            if (existingUser) {
+                return res.status(400).json({ msg: 'Username is already taken' });
+            }
+            user.username = username;
+        }
+
+        if (fullName !== undefined) user.fullName = fullName;
+        if (dob !== undefined) user.dob = dob;
 
         await user.save();
         res.json(user);
@@ -124,16 +141,28 @@ exports.googleAuth = async (req, res) => {
 
     try {
         // Verify the access_token by fetching user info from Google
-        const response = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
-            headers: { Authorization: `Bearer ${credential}` }
+        // Using v2 endpoint which is more stable and doesn't require additional scopes
+        const response = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
+            headers: { 'Authorization': `Bearer ${credential}` }
         });
 
         if (!response.ok) {
-            return res.status(401).json({ msg: 'Invalid Google token' });
+            const errorData = await response.json();
+            console.error('Google Auth Error Response:', errorData);
+            return res.status(401).json({ msg: 'Invalid or expired Google token' });
         }
 
         const payload = await response.json();
-        const { sub: googleId, email, name, picture } = payload;
+        // log payload for debugging account identification issues
+        console.log('Google payload received in /auth/google:', payload);
+
+        const googleId = payload.id || payload.sub;
+        const { email, name, picture } = payload;
+
+        if (!googleId) {
+            console.error('Google payload missing ID:', payload);
+            return res.status(400).json({ msg: 'Unable to get identifier from Google account' });
+        }
 
         if (!email) {
             return res.status(400).json({ msg: 'Unable to get email from Google account' });
@@ -152,23 +181,16 @@ exports.googleAuth = async (req, res) => {
                 if (!user.fullName && name) user.fullName = name;
                 await user.save();
             } else {
-                // Create a brand-new user
-                // Generate a unique username from the email prefix
-                let baseUsername = email.split('@')[0].replace(/[^a-zA-Z0-9]/g, '');
-                let username = baseUsername;
-                let counter = 1;
-                while (await User.findOne({ username })) {
-                    username = `${baseUsername}${counter}`;
-                    counter++;
-                }
-
-                user = new User({
-                    username,
-                    email,
-                    googleId,
-                    fullName: name || ''
+                // DON'T create the user yet. Return the profile data for frontend to handle.
+                return res.json({
+                    isNewUser: true,
+                    googleProfile: {
+                        googleId,
+                        email,
+                        fullName: name || '',
+                        picture
+                    }
                 });
-                await user.save();
             }
         }
 
@@ -179,6 +201,7 @@ exports.googleAuth = async (req, res) => {
             if (err) throw err;
             res.json({
                 token,
+                isNewUser: !!user._isNewUser,
                 user: {
                     id: user.id,
                     username: user.username,
@@ -192,5 +215,47 @@ exports.googleAuth = async (req, res) => {
     } catch (err) {
         console.error('Google Auth Error:', err.message);
         res.status(401).json({ msg: 'Google authentication failed. Please try again.' });
+    }
+};
+
+// Finalize Google Registration (Create User)
+exports.googleRegister = async (req, res) => {
+    const { username, email, googleId, fullName, dob } = req.body;
+
+    try {
+        // Validate uniqueness one last time
+        let existingUser = await User.findOne({ $or: [{ email }, { username }, { googleId }] });
+        if (existingUser) {
+            return res.status(400).json({ msg: 'User already exists' });
+        }
+
+        const user = new User({
+            username,
+            email,
+            googleId,
+            fullName,
+            dob
+        });
+
+        await user.save();
+
+        const payload = { user: { id: user.id } };
+
+        jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '30d' }, (err, token) => {
+            if (err) throw err;
+            res.json({
+                token,
+                user: {
+                    id: user.id,
+                    username: user.username,
+                    email: user.email,
+                    fullName: user.fullName,
+                    dob: user.dob
+                }
+            });
+        });
+    } catch (err) {
+        console.error('Google Register Error:', err.message);
+        res.status(500).send('Server Error');
     }
 };

@@ -15,6 +15,7 @@ const app = express();
 // Security Headers
 app.use(helmet({
     crossOriginResourcePolicy: false,
+    crossOriginOpenerPolicy: false,
 }));
 
 // Middleware (CORS) - Must be before Rate Limiter so 429 errors get CORS headers

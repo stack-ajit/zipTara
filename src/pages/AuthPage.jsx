@@ -75,20 +75,27 @@ const AuthPage = () => {
     // Google Login handler — uses the authorization code flow
     const handleGoogleLogin = useGoogleLogin({
         flow: 'implicit',
+        prompt: 'select_account', // always show account chooser so user can pick the correct email
         onSuccess: async (tokenResponse) => {
             setIsGoogleLoading(true);
             setSubmitError('');
             try {
-                // Exchange the access_token for user info from Google, then get an id_token
-                // For implicit flow, we get an access_token. We'll send it to our backend.
-                const res = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+                // Verify the access_token by fetching user info from Google using v2 endpoint
+                const res = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
                     headers: { Authorization: `Bearer ${tokenResponse.access_token}` }
                 });
+                
+                if (!res.ok) {
+                    throw new Error('Failed to verify Google token');
+                }
+                
                 const profile = await res.json();
 
-                // We'll send the access_token to our backend which will verify it
-                const success = await googleLogin(tokenResponse.access_token);
-                if (success) navigate('/');
+                // Send the access_token to our backend which will verify it
+                const result = await googleLogin(tokenResponse.access_token);
+                if (result.success) {
+                    navigate(result.isNewUser ? '/setup-profile' : '/');
+                }
             } catch (err) {
                 console.error('Google login error:', err);
                 setSubmitError('Google login failed. Please try again.');

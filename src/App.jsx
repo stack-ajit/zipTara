@@ -21,11 +21,7 @@ function App() {
         <Routes>
           <Route path="/login" element={<AuthPage />} />
 
-          <Route path="/setup-profile" element={
-            <ProtectedRoute>
-              <ProfileSetupPage />
-            </ProtectedRoute>
-          } />
+          <Route path="/setup-profile" element={<ProfileSetupPage />} />
 
           <Route path="/" element={
             <ProtectedRoute>

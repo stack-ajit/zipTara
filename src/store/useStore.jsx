@@ -13,6 +13,7 @@ export const TripProvider = ({ children }) => {
     const [error, setError] = useState(null);
     const [notifications, setNotifications] = useState([]);
     const [unreadCount, setUnreadCount] = useState(0);
+    const [pendingGoogleUser, setPendingGoogleUser] = useState(null);
 
     // Load User on Mount/Token Change
     useEffect(() => {
@@ -85,25 +86,47 @@ export const TripProvider = ({ children }) => {
     const googleLogin = async (credential) => {
         try {
             const res = await api.post('/auth/google', { credential });
+
+            if (res.data.isNewUser) {
+                setPendingGoogleUser(res.data.googleProfile);
+                return { success: true, isNewUser: true };
+            }
+
             localStorage.setItem('token', res.data.token);
             setToken(res.data.token);
             setUser(res.data.user);
-            return true;
+            setPendingGoogleUser(null);
+            return { success: true, isNewUser: false };
         } catch (err) {
             console.error("Google Login Error:", err.response?.data?.msg);
             setError(err.response?.data?.msg || 'Google login failed');
-            return false;
+            return { success: false };
         }
     };
 
-    const updateProfile = async (fullName, dob) => {
+    const googleRegister = async (registrationData) => {
         try {
-            const res = await api.put('/auth/profile', { fullName, dob });
+            const res = await api.post('/auth/google-register', registrationData);
+            localStorage.setItem('token', res.data.token);
+            setToken(res.data.token);
+            setUser(res.data.user);
+            setPendingGoogleUser(null);
+            return true;
+        } catch (err) {
+            console.error("Google Register Error:", err.response?.data?.msg);
+            setError(err.response?.data?.msg || 'Google registration failed');
+            return res.data?.msg || false;
+        }
+    };
+
+    const updateProfile = async (fullName, dob, username) => {
+        try {
+            const res = await api.put('/auth/profile', { fullName, dob, username });
             setUser(prev => ({ ...prev, ...res.data }));
             return true;
         } catch (err) {
             console.error("Update Profile Error:", err);
-            return false;
+            return err.response?.data?.msg || false;
         }
     };
 
@@ -121,6 +144,7 @@ export const TripProvider = ({ children }) => {
         localStorage.removeItem('token');
         setToken(null);
         setUser(null);
+        setPendingGoogleUser(null);
         setTrips([]);
         setNotifications([]);
         setUnreadCount(0);
@@ -415,10 +439,12 @@ export const TripProvider = ({ children }) => {
             error,
             login,
             googleLogin,
+            googleRegister,
             register,
             updateProfile,
             changePassword,
             logout,
+            pendingGoogleUser,
             addTrip,
             deleteTrip,
             updateTrip,

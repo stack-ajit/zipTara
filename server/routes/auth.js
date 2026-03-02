@@ -31,5 +31,6 @@ router.put('/password', auth, authController.changePassword);
 // @desc    Authenticate user with Google OAuth
 // @access  Public
 router.post('/google', authController.googleAuth);
+router.post('/google-register', authController.googleRegister);
 
 module.exports = router;
