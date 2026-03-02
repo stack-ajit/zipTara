@@ -1,4 +1,4 @@
-import { Home, Bookmark, LogOut, MapPin, Info, User, Sparkle } from 'lucide-react';
+import { Home, Bookmark, LogOut, MapPin, Info, User, Sparkle, LogIn, Mail } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 import { useTrips } from '../store/useStore';
 
@@ -6,13 +6,16 @@ const Sidebar = ({ onClose }) => {
     const { logout, user, unreadCount } = useTrips();
 
     const navItems = [
-        { icon: Home, label: 'Home', path: '/' },
-        { icon: Bookmark, label: 'Saved', path: '/saved' },
-        { icon: User, label: 'Settings', path: '/settings' },
-        { icon: Sparkle, label: 'Notifications', path: '/notifications', badge: unreadCount },
-        { icon: User, label: 'My Profile', path: '/profile' },
-        { icon: Info, label: 'About Us', path: '/about' },
+        { icon: Home, label: 'Home', path: '/', protected: true },
+        { icon: Bookmark, label: 'Saved', path: '/saved', protected: true },
+        { icon: User, label: 'Settings', path: '/settings', protected: true },
+        { icon: Sparkle, label: 'Notifications', path: '/notifications', badge: unreadCount, protected: true },
+        { icon: User, label: 'My Profile', path: '/profile', protected: true },
+        { icon: Info, label: 'About Us', path: '/about', protected: false },
+        { icon: Mail, label: 'Contact Us', path: '/contact', protected: false },
     ];
+
+    const filteredNavItems = navItems.filter(item => !item.protected || user);
 
     const handleNavClick = () => {
         if (onClose) onClose();
@@ -31,7 +34,7 @@ const Sidebar = ({ onClose }) => {
 
             {/* Navigation */}
             <nav className="flex-1 px-4 space-y-2">
-                {navItems.map((item) => (
+                {filteredNavItems.map((item) => (
                     <NavLink
                         key={item.path}
                         to={item.path}
@@ -58,13 +61,24 @@ const Sidebar = ({ onClose }) => {
 
             {/* Footer Actions */}
             <div className="p-4 border-t border-white/10">
-                <button
-                    onClick={() => { logout(); if (onClose) onClose(); }}
-                    className="w-full flex items-center space-x-3 px-4 py-3 text-gray-400 hover:text-white hover:bg-white/5 rounded-xl transition-all"
-                >
-                    <LogOut className="w-5 h-5" />
-                    <span>Logout</span>
-                </button>
+                {user ? (
+                    <button
+                        onClick={() => { logout(); if (onClose) onClose(); }}
+                        className="w-full flex items-center space-x-3 px-4 py-3 text-gray-400 hover:text-white hover:bg-white/5 rounded-xl transition-all"
+                    >
+                        <LogOut className="w-5 h-5" />
+                        <span>Logout</span>
+                    </button>
+                ) : (
+                    <NavLink
+                        to="/login"
+                        onClick={handleNavClick}
+                        className="w-full flex items-center space-x-3 px-4 py-3 text-gray-400 hover:text-white hover:bg-white/5 rounded-xl transition-all"
+                    >
+                        <LogIn className="w-5 h-5" />
+                        <span>Login</span>
+                    </NavLink>
+                )}
             </div>
         </aside>
     );

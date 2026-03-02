@@ -10,6 +10,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import { TripProvider } from './store/useStore';
 import ProfileSetupPage from './pages/ProfileSetupPage';
 import AboutUs from './pages/AboutUs';
+import ContactUs from './pages/ContactUs';
 import Settings from './pages/Settings';
 import MyProfile from './pages/MyProfile';
 import Notifications from './pages/Notifications';
@@ -65,11 +66,8 @@ function App() {
             </ProtectedRoute>
           } />
 
-          <Route path="/about" element={
-            <ProtectedRoute>
-              <AboutUs />
-            </ProtectedRoute>
-          } />
+          <Route path="/about" element={<AboutUs />} />
+          <Route path="/contact" element={<ContactUs />} />
 
           <Route path="/public/:id" element={<PublicTrip />} />
 

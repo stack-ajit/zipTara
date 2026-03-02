@@ -34,6 +34,7 @@ const Footer = () => {
                         <h3 className="text-white font-bold mb-3 text-sm uppercase tracking-wider">Explore</h3>
                         <ul className="space-y-2 text-sm">
                             <li><Link to="/about" className="hover:text-white transition-colors" onClick={() => window.scrollTo(0, 0)}>About Us</Link></li>
+                            <li><Link to="/contact" className="hover:text-white transition-colors" onClick={() => window.scrollTo(0, 0)}>Contact Us</Link></li>
                         </ul>
                     </div>
 

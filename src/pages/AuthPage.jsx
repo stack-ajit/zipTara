@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { MapPin, Lock, Mail, ArrowRight, User, Calendar, ArrowLeft, Plane, Compass, Mountain, Camera, Eye, EyeOff } from 'lucide-react';
 import { useTrips } from '../store/useStore';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -84,11 +84,11 @@ const AuthPage = () => {
                 const res = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
                     headers: { Authorization: `Bearer ${tokenResponse.access_token}` }
                 });
-                
+
                 if (!res.ok) {
                     throw new Error('Failed to verify Google token');
                 }
-                
+
                 const profile = await res.json();
 
                 // Send the access_token to our backend which will verify it
@@ -424,14 +424,21 @@ const AuthPage = () => {
                     </div>
                 </motion.div>
 
-                {/* Footer Tagline */}
+                {/* Footer Tagline & Links */}
                 <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: 0.8 }}
-                    className="text-center mt-4 text-white/60 text-sm font-medium tracking-wider"
+                    className="text-center mt-4 space-y-3"
                 >
-                    Safar hai, To <span style={{ fontFamily: 'Amaranth, sans-serif' }}><span className="text-white">zip</span><span className="text-red-500">Tara</span></span> hai
+                    <div className="text-white/60 text-sm font-medium tracking-wider">
+                        Safar hai, To <span style={{ fontFamily: 'Amaranth, sans-serif' }}><span className="text-white">zip</span><span className="text-red-500">Tara</span></span> hai
+                    </div>
+                    <div className="flex items-center justify-center gap-6 text-xs font-medium">
+                        <Link to="/about" className="text-white/40 hover:text-white transition-colors">About Us</Link>
+                        <div className="w-1 h-1 rounded-full bg-white/20" />
+                        <Link to="/contact" className="text-white/40 hover:text-white transition-colors">Contact Us</Link>
+                    </div>
                 </motion.div>
             </div >
         </div >
