@@ -37,7 +37,13 @@ const UserSchema = new mongoose.Schema({
     savedTrips: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Trip'
-    }]
+    }],
+    resetPasswordToken: {
+        type: String
+    },
+    resetPasswordExpire: {
+        type: Date
+    }
 });
 
 module.exports = mongoose.model('User', UserSchema);

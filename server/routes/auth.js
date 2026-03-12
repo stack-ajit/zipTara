@@ -33,4 +33,14 @@ router.put('/password', auth, authController.changePassword);
 router.post('/google', authController.googleAuth);
 router.post('/google-register', authController.googleRegister);
 
+// @route   POST api/auth/forgotpassword
+// @desc    Send password reset email
+// @access  Public
+router.post('/forgotpassword', authController.forgotPassword);
+
+// @route   PUT api/auth/resetpassword/:resetToken
+// @desc    Reset password using token
+// @access  Public
+router.put('/resetpassword/:resetToken', authController.resetPassword);
+
 module.exports = router;

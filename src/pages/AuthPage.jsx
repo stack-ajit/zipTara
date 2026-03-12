@@ -206,14 +206,14 @@ const AuthPage = () => {
                     `}</style>
 
                     <div className="bg-gray-900/95 backdrop-blur-xl rounded-3xl overflow-hidden">
-                        <div className="p-6 sm:p-8">
+                        <div className="p-5 sm:p-6">
                             {/* Header Section */}
-                            <div className="text-center mb-5">
+                            <div className="text-center mb-4">
                                 <motion.div
                                     initial={{ opacity: 0, y: -10 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     transition={{ delay: 0.3 }}
-                                    className="inline-flex items-center justify-center space-x-2 mb-4 bg-white/10 px-4 py-1.5 rounded-full backdrop-blur-md border border-white/10"
+                                    className="inline-flex items-center justify-center space-x-2 mb-2 bg-white/10 px-4 py-1 rounded-full backdrop-blur-md border border-white/10"
                                 >
                                     <MapPin className="w-5 h-5 text-white" />
                                     <span className="text-lg font-bold" style={{ fontFamily: 'Amaranth, sans-serif' }}>
@@ -236,7 +236,7 @@ const AuthPage = () => {
                                     initial={{ opacity: 0 }}
                                     animate={{ opacity: 1 }}
                                     transition={{ delay: 0.5 }}
-                                    className="text-gray-300 text-sm"
+                                    className="text-gray-300 text-xs"
                                 >
                                     {isLogin
                                         ? 'Enter your details to access your adventures.'
@@ -272,7 +272,7 @@ const AuthPage = () => {
                                                         type="text"
                                                         required
                                                         placeholder="Username"
-                                                        className="w-full pl-12 pr-4 py-3.5 rounded-2xl bg-white/10 border border-white/20 text-white placeholder-gray-400 focus:bg-white/15 focus:border-white/40 focus:ring-2 focus:ring-white/20 outline-none transition-all"
+                                                    className="w-full pl-12 pr-4 py-3 rounded-2xl bg-white/10 border border-white/20 text-white placeholder-gray-400 focus:bg-white/15 focus:border-white/40 focus:ring-2 focus:ring-white/20 outline-none transition-all"
                                                         value={formData.name}
                                                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                                                     />
@@ -298,7 +298,7 @@ const AuthPage = () => {
                                                     type={showPassword ? "text" : "password"}
                                                     required
                                                     placeholder={isLogin ? "Password" : "Create Password"}
-                                                    className="w-full pl-12 pr-12 py-3.5 rounded-2xl bg-white/10 border border-white/20 text-white placeholder-gray-400 focus:bg-white/15 focus:border-white/40 focus:ring-2 focus:ring-white/20 outline-none transition-all"
+                                                    className="w-full pl-12 pr-12 py-3 rounded-2xl bg-white/10 border border-white/20 text-white placeholder-gray-400 focus:bg-white/15 focus:border-white/40 focus:ring-2 focus:ring-white/20 outline-none transition-all"
                                                     value={formData.password}
                                                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                                                 />
@@ -311,6 +311,13 @@ const AuthPage = () => {
                                                     {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                                                 </button>
                                             </div>
+                                            {isLogin && (
+                                                <div className="text-right mt-1">
+                                                    <Link to="/forgot-password" opacity-60 hover:opacity-100 className="text-[10px] text-gray-400 hover:text-red-400 transition-colors font-medium">
+                                                        Forgot Password?
+                                                    </Link>
+                                                </div>
+                                            )}
                                         </motion.div>
                                     )}
 
@@ -364,7 +371,7 @@ const AuthPage = () => {
                                 <button
                                     type="submit"
                                     disabled={isSubmitting}
-                                    className={`w-full relative overflow-hidden group bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 text-white py-4 rounded-2xl font-bold text-sm shadow-xl flex items-center justify-center space-x-2 transition-all hover:shadow-2xl active:scale-[0.98] ${isSubmitting ? 'opacity-70 cursor-not-allowed' : ''}`}
+                                    className={`w-full relative overflow-hidden group bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 text-white py-3 rounded-2xl font-bold text-sm shadow-xl flex items-center justify-center space-x-2 transition-all hover:shadow-2xl active:scale-[0.98] ${isSubmitting ? 'opacity-70 cursor-not-allowed' : ''}`}
                                 >
                                     {isSubmitting ? (
                                         <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -389,7 +396,7 @@ const AuthPage = () => {
                                             type="button"
                                             onClick={() => handleGoogleLogin()}
                                             disabled={isGoogleLoading}
-                                            className="w-full flex items-center justify-center gap-3 bg-white/10 hover:bg-white/20 border border-white/20 hover:border-white/40 text-white py-3.5 rounded-2xl font-medium text-sm transition-all active:scale-[0.98]"
+                                            className="w-full flex items-center justify-center gap-3 bg-white/10 hover:bg-white/20 border border-white/20 hover:border-white/40 text-white py-3 rounded-2xl font-medium text-sm transition-all active:scale-[0.98]"
                                         >
                                             {isGoogleLoading ? (
                                                 <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -409,13 +416,13 @@ const AuthPage = () => {
                                 )}
                             </form>
 
-                            <div className="mt-5 pt-4 border-t border-white/10 text-center">
-                                <p className="text-xs text-gray-400 font-medium mb-1">
+                            <div className="mt-4 pt-3 border-t border-white/10 text-center">
+                                <p className="text-[10px] text-gray-400 font-medium mb-0.5">
                                     {isLogin ? "New to zipTara?" : "Already have an account?"}
                                 </p>
                                 <button
                                     onClick={toggleMode}
-                                    className="text-white font-bold hover:text-red-400 transition-colors text-sm hover:underline"
+                                    className="text-white font-bold hover:text-red-400 transition-colors text-xs hover:underline"
                                 >
                                     {isLogin ? "Create an account" : "Log in instead"}
                                 </button>
@@ -429,9 +436,9 @@ const AuthPage = () => {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: 0.8 }}
-                    className="text-center mt-4 space-y-3"
+                    className="text-center mt-3 space-y-2"
                 >
-                    <div className="text-white/60 text-sm font-medium tracking-wider">
+                    <div className="text-white/60 text-xs font-medium tracking-wider">
                         Safar hai, To <span style={{ fontFamily: 'Amaranth, sans-serif' }}><span className="text-white">zip</span><span className="text-red-500">Tara</span></span> hai
                     </div>
                     <div className="flex items-center justify-center gap-6 text-xs font-medium">

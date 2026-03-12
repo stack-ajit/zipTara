@@ -14,6 +14,8 @@ import ContactUs from './pages/ContactUs';
 import Settings from './pages/Settings';
 import MyProfile from './pages/MyProfile';
 import Notifications from './pages/Notifications';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
 
 function App() {
   return (
@@ -68,6 +70,8 @@ function App() {
 
           <Route path="/about" element={<AboutUs />} />
           <Route path="/contact" element={<ContactUs />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password/:resetToken" element={<ResetPassword />} />
 
           <Route path="/public/:id" element={<PublicTrip />} />
 
