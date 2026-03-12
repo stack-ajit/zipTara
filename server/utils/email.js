@@ -123,8 +123,6 @@ const sendPasswordResetEmail = async (to, resetUrl) => {
         console.error('Resend API Error:', error);
         throw new Error('Failed to send email via Resend');
     }
-
-    console.log('Email sent successfully via Resend:', data.id);
 };
 
 module.exports = { sendPasswordResetEmail };
