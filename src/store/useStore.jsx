@@ -416,10 +416,11 @@ export const TripProvider = ({ children }) => {
 
             // Update the list with the full details so we don't refetch if navigating back and forth within session
             setTrips(prev => {
-                const parts = prev.some(t => t.id === fullTrip.id)
-                    ? prev.map(t => t.id === fullTrip.id ? fullTrip : t)
-                    : [...prev]; // Don't add to list if not there, or do? Maybe just return it.
-                return parts;
+                if (prev.some(t => t.id === fullTrip.id)) {
+                    return prev.map(t => t.id === fullTrip.id ? fullTrip : t);
+                }
+                // CRITICAL FIX: Don't return [...prev], as it creates a new reference and causes infinite renders for public trips
+                return prev;
             });
 
             return fullTrip;

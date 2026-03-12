@@ -22,6 +22,8 @@ const TripDetail = () => {
 
     useEffect(() => {
         if (loading) return;
+        if (trip && (trip.id === id || trip._id === id)) return; // CRITICAL FIX: Stop infinite loop once loaded
+
         const t = getTrip(id);
 
         const loadDetails = async () => {
