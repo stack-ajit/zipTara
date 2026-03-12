@@ -8,17 +8,27 @@ const transporter = nodemailer.createTransport({
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS
     },
+    logger: true,
+    debug: true, // Show full SMTP conversation in Render logs
     connectionTimeout: 10000, // 10 seconds
     greetingTimeout: 10000,
     socketTimeout: 10000
 });
 
-// Verify connection configuration
+// Verify connection configuration on startup
 transporter.verify(function (error, success) {
+    console.log('Testing SMTP connection with settings:', {
+        host: 'smtp.gmail.com',
+        port: 587,
+        user_exists: !!process.env.EMAIL_USER,
+        pass_exists: !!process.env.EMAIL_PASS
+    });
+
     if (error) {
         console.error('SMTP Connection Error:', error);
         if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
-            console.error('ERROR: EMAIL_USER or EMAIL_PASS is missing in environment variables!');
+            console.error('CRITICAL: EMAIL_USER or EMAIL_PASS is missing or misspelled in Render Environment!');
+            console.log('Available Env Keys:', Object.keys(process.env).filter(k => k.includes('MAIL') || k.includes('USER')));
         }
     } else {
         console.log('SMTP Server is ready to take our messages');
