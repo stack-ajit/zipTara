@@ -2,34 +2,30 @@ const nodemailer = require('nodemailer');
 
 const transporter = nodemailer.createTransport({
     host: 'smtp.gmail.com',
-    port: 587,
-    secure: false, // Use STARTTLS
+    port: 465,
+    secure: true, // Use Port 465 for SMTPS
     auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS
     },
     logger: true,
-    debug: true, // Show full SMTP conversation in Render logs
-    connectionTimeout: 10000, // 10 seconds
-    greetingTimeout: 10000,
-    socketTimeout: 10000
+    debug: true,
+    connectionTimeout: 30000, // Increase to 30 seconds
+    greetingTimeout: 30000,
+    socketTimeout: 30000
 });
 
 // Verify connection configuration on startup
 transporter.verify(function (error, success) {
     console.log('Testing SMTP connection with settings:', {
         host: 'smtp.gmail.com',
-        port: 587,
+        port: 465,
         user_exists: !!process.env.EMAIL_USER,
         pass_exists: !!process.env.EMAIL_PASS
     });
 
     if (error) {
         console.error('SMTP Connection Error:', error);
-        if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
-            console.error('CRITICAL: EMAIL_USER or EMAIL_PASS is missing or misspelled in Render Environment!');
-            console.log('Available Env Keys:', Object.keys(process.env).filter(k => k.includes('MAIL') || k.includes('USER')));
-        }
     } else {
         console.log('SMTP Server is ready to take our messages');
     }
