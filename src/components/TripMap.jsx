@@ -16,14 +16,7 @@ const mapOptions = {
     scaleControl: true,
     streetViewControl: false,
     rotateControl: false,
-    fullscreenControl: false,
-    styles: [
-        {
-            "featureType": "poi",
-            "elementType": "labels",
-            "stylers": [{ "visibility": "off" }]
-        }
-    ]
+    fullscreenControl: false
 };
 
 const LIBRARIES = ['places', 'marker'];
