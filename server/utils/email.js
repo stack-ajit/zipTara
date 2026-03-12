@@ -1,46 +1,22 @@
-const nodemailer = require('nodemailer');
+const { Resend } = require('resend');
 
-const transporter = nodemailer.createTransport({
-    host: 'smtp.gmail.com',
-    port: 465,
-    secure: true, // Use Port 465 for SMTPS
-    auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS
-    },
-    logger: true,
-    debug: true,
-    connectionTimeout: 30000, // Increase to 30 seconds
-    greetingTimeout: 30000,
-    socketTimeout: 30000
-});
-
-// Verify connection configuration on startup
-transporter.verify(function (error, success) {
-    console.log('Testing SMTP connection with settings:', {
-        host: 'smtp.gmail.com',
-        port: 465,
-        user_exists: !!process.env.EMAIL_USER,
-        pass_exists: !!process.env.EMAIL_PASS
-    });
-
-    if (error) {
-        console.error('SMTP Connection Error:', error);
-    } else {
-        console.log('SMTP Server is ready to take our messages');
-    }
-});
+// Initialize Resend with API Key from environment
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 /**
- * Send a password reset email
+ * Send a password reset email using Resend API
  * @param {string} to - Recipient email address
  * @param {string} resetUrl - The password reset link
  */
 const sendPasswordResetEmail = async (to, resetUrl) => {
     const year = new Date().getFullYear();
-    const mailOptions = {
-        from: `"zipTara" <${process.env.EMAIL_USER}>`,
-        to,
+
+    // We use the verified domain mail.ziptara.in
+    const fromAddress = 'zipTara <noreply@mail.ziptara.in>';
+
+    const { data, error } = await resend.emails.send({
+        from: fromAddress,
+        to: [to],
         subject: 'Password Reset Request \u2013 zipTara',
         html: `
         <!DOCTYPE html>
@@ -141,9 +117,14 @@ const sendPasswordResetEmail = async (to, resetUrl) => {
         </body>
         </html>
         `
-    };
+    });
 
-    await transporter.sendMail(mailOptions);
+    if (error) {
+        console.error('Resend API Error:', error);
+        throw new Error('Failed to send email via Resend');
+    }
+
+    console.log('Email sent successfully via Resend:', data.id);
 };
 
 module.exports = { sendPasswordResetEmail };
