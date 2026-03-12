@@ -56,7 +56,7 @@ const ForgotPassword = () => {
                     <div className="bg-gray-900/97 backdrop-blur-xl rounded-3xl p-8">
                         {/* Logo */}
                         <div className="flex items-center justify-center gap-2 mb-6">
-                            <MapPin className="w-5 h-5 text-red-500" />
+                            <MapPin className="w-5 h-5 text-white" />
                             <span className="text-lg font-extrabold tracking-wide" style={{ fontFamily: 'Amaranth, sans-serif' }}>
                                 <span className="text-white">zip</span>
                                 <span className="text-red-500">Tara</span>
