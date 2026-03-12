@@ -7,6 +7,21 @@ const transporter = nodemailer.createTransport({
     auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS
+    },
+    connectionTimeout: 10000, // 10 seconds
+    greetingTimeout: 10000,
+    socketTimeout: 10000
+});
+
+// Verify connection configuration
+transporter.verify(function (error, success) {
+    if (error) {
+        console.error('SMTP Connection Error:', error);
+        if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+            console.error('ERROR: EMAIL_USER or EMAIL_PASS is missing in environment variables!');
+        }
+    } else {
+        console.log('SMTP Server is ready to take our messages');
     }
 });
 
