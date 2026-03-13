@@ -12,6 +12,10 @@ dotenv.config();
 
 const app = express();
 
+// Trust proxy for Render
+app.set('trust proxy', 1);
+
+
 // Security Headers
 app.use(helmet({
     crossOriginResourcePolicy: false,
